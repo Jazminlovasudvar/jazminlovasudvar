@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kapcsolat - Jázmin Lovasudvar</title>
+    <meta name="description" content="Vegye fel velünk a kapcsolatot! Jázmin Lovasudvar, Gyöngyös. Telefon: +36 20 500 9664. Nyitvatartás: április–október.">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐴</text></svg>">
+    <style>
+        :root { --dark-green: #2e7d32; --accent-gold: #b08d57; --bg-cream: #faf8f5; --white: #ffffff; --text-dark: #2c3e50; }
+        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--bg-cream); color: var(--text-dark); line-height: 1.8; overflow-x: hidden; }
+        h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--dark-green); margin-top: 0; }
+
+        header { background-color: var(--white); height: 90px; display: flex; justify-content: space-between; align-items: center; padding: 0 8%; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo { color: var(--dark-green); font-weight: 700; font-size: 20px; text-decoration: none; letter-spacing: 1px; }
+        .nav-links { display: flex; align-items: center; gap: 30px; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 13px; font-weight: 600; text-transform: uppercase; transition: 0.3s; }
+        .nav-links a:hover { color: var(--dark-green); }
+        .btn-foglalas-nav { background-color: var(--dark-green); color: white !important; padding: 12px 25px; border-radius: 50px; }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; border: none; background: none; padding: 10px; }
+        .hamburger span { width: 30px; height: 3px; background-color: var(--dark-green); border-radius: 2px; }
+
+        .page-header { background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('hero.jpg'); background-size: cover; background-position: center; height: 30vh; display: flex; justify-content: center; align-items: center; color: white; text-align: center; }
+        .page-header h1 { color: white; font-size: clamp(24px, 4vw, 38px); }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 60px 5%; }
+
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 50px; }
+
+        .contact-card { background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .contact-item { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 20px; }
+        .contact-icon { font-size: 24px; min-width: 30px; }
+        .contact-label { font-size: 12px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+        .contact-value { font-size: 15px; font-weight: 600; color: var(--text-dark); }
+        .contact-value a { color: var(--dark-green); text-decoration: none; }
+
+        /* NYITVATARTÁS */
+        .nyit-card { background: white; padding: 35px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .nyit-card h2 { margin-bottom: 5px; }
+        .nyit-subtitle { color: #888; font-size: 14px; margin-bottom: 25px; }
+        .nyit-block { margin-bottom: 20px; }
+        .nyit-block-title { font-weight: 700; font-size: 14px; color: var(--dark-green); margin-bottom: 8px; }
+        .nyit-row { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; border-bottom: 1px solid #f5f5f5; }
+        .nyit-row:last-child { border-bottom: none; }
+        .nyit-row .nap { color: #666; }
+        .nyit-row .ido { font-weight: 600; }
+
+        .map-section { margin-top: 50px; }
+        .map-section h2 { margin-bottom: 20px; }
+        .map-container { border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .map-container iframe { width: 100%; height: 350px; border: none; display: block; }
+        .map-btns { display: flex; gap: 15px; flex-wrap: wrap; }
+        .btn-map { padding: 14px 25px; border-radius: 50px; text-decoration: none; color: white; font-weight: 600; font-size: 14px; transition: opacity 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-map:hover { opacity: 0.85; }
+        .btn-gmaps { background: #4285f4; }
+        .btn-waze { background: #33CCFF; }
+
+        .email-btn { display: inline-block; background: var(--dark-green); color: white; padding: 16px 40px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 15px; margin-top: 20px; transition: 0.3s; }
+        .email-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        footer { background: #1a1a1a; color: #999; padding: 40px 8%; text-align: center; margin-top: 60px; font-size: 14px; width: 100%; box-sizing: border-box; }
+        footer strong { color: #ddd; }
+
+        .sticky-booking-btn { display: none; position: fixed; bottom: 30px; right: 30px; background-color: var(--dark-green); color: white; padding: 12px 25px; border-radius: 50px; text-decoration: none; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 14px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 2000; align-items: center; gap: 10px; }
+
+        @media (max-width: 768px) {
+            .contact-grid { grid-template-columns: 1fr; }
+            .map-btns { flex-direction: column; }
+            .btn-map { justify-content: center; }
+            .hamburger { display: flex; }
+            .nav-links { display: none; position: absolute; top: 90px; left: 0; width: 100%; background: white; flex-direction: column; padding: 30px 0; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+            .nav-links.active { display: flex; }
+            header { padding: 0 5%; }
+        }
+        @media (max-width: 600px) {
+            .sticky-booking-btn { display: flex; bottom: 20px; right: 20px; padding: 10px 20px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">JÁZMIN LOVASUDVAR</a>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menü">
+        <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links" id="navLinks">
+        <a href="index.html">Főoldal</a>
+        <a href="rolunk.html">Rólunk</a>
+        <a href="biztonsag.html">Biztonság</a>
+        <a href="kapcsolat.html">Kapcsolat</a>
+        <a href="foglalas.html" class="btn-foglalas-nav">FOGLALÁS</a>
+    </nav>
+</header>
+
+<section class="page-header">
+    <h1>Kapcsolat</h1>
+</section>
+
+<main class="container">
+
+    <div class="contact-grid">
+        <!-- Elérhetőségek -->
+        <div class="contact-card">
+            <h2>Elérhetőségek</h2>
+
+            <div class="contact-item">
+                <span class="contact-icon">📍</span>
+                <div>
+                    <div class="contact-label">Cím</div>
+                    <div class="contact-value">3200 Gyöngyös, Bene utca 14.</div>
+                </div>
+            </div>
+
+            <div class="contact-item">
+                <span class="contact-icon">📞</span>
+                <div>
+                    <div class="contact-label">Telefon</div>
+                    <div class="contact-value"><a href="tel:+36205009664">+36 20 500 9664</a></div>
+                </div>
+            </div>
+
+            <div class="contact-item">
+                <span class="contact-icon">✉️</span>
+                <div>
+                    <div class="contact-label">E-mail</div>
+                    <div class="contact-value"><a href="mailto:info@jazminlovasudvar.hu">info@jazminlovasudvar.hu</a></div>
+                </div>
+            </div>
+
+            <p style="font-size:14px;color:#666;margin-top:20px;">Kérdéssel forduljon hozzánk bátran – szívesen segítünk a foglalásban vagy a tájékozódásban.</p>
+            <a href="mailto:info@jazminlovasudvar.hu" class="email-btn">✉️ E-MAIL KÜLDÉSE</a>
+        </div>
+
+        <!-- Nyitvatartás -->
+        <div class="nyit-card">
+            <h2>Nyitvatartás</h2>
+            <p class="nyit-subtitle">Április – Október között várjuk a vendégeinket</p>
+
+            <div class="nyit-block">
+                <div class="nyit-block-title">🎒 Iskolai időszak – Hétköznap</div>
+                <div class="nyit-row"><span class="nap">Téli időszámítás</span><span class="ido">14:00 – 16:00</span></div>
+                <div class="nyit-row"><span class="nap">Nyári időszámítás</span><span class="ido">14:00 – 20:00</span></div>
+            </div>
+
+            <div class="nyit-block">
+                <div class="nyit-block-title">☀️ Iskolai szünet – Hétköznap</div>
+                <div class="nyit-row"><span class="nap">Téli időszámítás</span><span class="ido">09:00 – 16:00</span></div>
+                <div class="nyit-row"><span class="nap">Nyári időszámítás</span><span class="ido">09:00 – 20:00</span></div>
+            </div>
+
+            <div class="nyit-block">
+                <div class="nyit-block-title">🐴 Hétvégén</div>
+                <div class="nyit-row"><span class="nap">Délelőtt</span><span class="ido">09:00 – 10:00</span></div>
+                <div class="nyit-row"><span class="nap">Délután (téli)</span><span class="ido">14:00 – 16:00</span></div>
+                <div class="nyit-row"><span class="nap">Délután (nyári)</span><span class="ido">14:00 – 20:00</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Térkép -->
+    <div class="map-section">
+        <h2>Hogyan találjon meg minket?</h2>
+        <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3207.3264400841513!2d19.937617776730534!3d47.79436597499205!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47405a22f7006b83%3A0x232026fa27df2921!2zR3nDtm5necO2cywgQmVuZSB1LiAxNCwgMzIwMA!5e1!3m2!1shu!2shu!4v1778432403321!5m2!1shu!2shu" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </div>
+
+</main>
+
+<footer>
+    <p><strong>JÁZMIN LOVASUDVAR</strong> | Gyöngyös | +36 20 500 9664 | <a href="mailto:info@jazminlovasudvar.hu" style="color:#aaa;text-decoration:none;">info@jazminlovasudvar.hu</a></p>
+    <p style="margin-top:10px;"><a href="adatkezeles.html" style="color:#666;text-decoration:none;font-size:13px;">Adatkezelési tájékoztató</a></p>
+    <p style="margin-top:8px;">© 2026 Minden jog fenntartva.</p>
+    <a href="admin.html" style="color:#444;text-decoration:none;font-size:13px;margin-top:15px;display:inline-block;padding:8px 16px;border:1px solid #444;border-radius:20px;">⚙ Admin</a>
+</footer>
+
+<a href="foglalas.html" class="sticky-booking-btn">
+    <span>🐴</span>
+    <span>FOGLALÁS MOST</span>
+</a>
+
+<script>
+    function toggleMenu() {
+        document.getElementById("navLinks").classList.toggle("active");
+    }
+</script>
+
+</body>
+</html>

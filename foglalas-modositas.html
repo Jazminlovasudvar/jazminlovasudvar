@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foglalás módosítása – Jázmin Lovasudvar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐴</text></svg>">
+
+    <style>
+        :root {
+            --dark-green: #2e7d32;
+            --dark-green-hover: #1b5e20;
+            --accent-gold: #b08d57;
+            --bg-cream: #faf8f5;
+            --white: #ffffff;
+            --text-dark: #2c3e50;
+            --muted: #7f8c8d;
+            --border: #e0e0e0;
+            --green-light: #e8f5e9;
+            --red: #c0392b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-cream); color: var(--text-dark); line-height: 1.8; }
+
+        /* HEADER */
+        header { background: var(--white); height: 90px; display: flex; justify-content: space-between; align-items: center; padding: 0 8%; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo { color: var(--dark-green); font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; text-decoration: none; text-transform: uppercase; }
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 13px; font-weight: 600; margin-left: 20px; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--dark-green); }
+        .btn-foglalas-nav { background: var(--dark-green); color: white !important; padding: 12px 25px; border-radius: 50px; }
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; border: none; background: none; padding: 10px; }
+        .hamburger span { width: 28px; height: 3px; background: var(--dark-green); border-radius: 2px; }
+
+        /* PAGE HEADER */
+        .page-header { background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('hero.jpg'); background-size: cover; background-position: center; height: 30vh; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
+        .page-header h1 { font-family: 'Montserrat', sans-serif; font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+        .page-header p { font-size: 15px; opacity: 0.9; }
+
+        /* LAYOUT */
+        .container { max-width: 700px; margin: -50px auto 60px; padding: 0 5%; position: relative; z-index: 10; }
+        .card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+
+        .section-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+        /* FOGLALÁS ÖSSZEFOGLALÓ */
+        .booking-info { background: var(--green-light); border-radius: 16px; padding: 22px; margin-bottom: 24px; }
+        .booking-info .bi-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 15px; border-bottom: 1px solid rgba(46,125,50,0.12); }
+        .booking-info .bi-row:last-child { border-bottom: none; }
+        .booking-info .bi-k { color: var(--muted); font-weight: 600; }
+        .booking-info .bi-v { font-weight: 700; color: var(--text-dark); text-align: right; }
+
+        /* GOMBOK */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 15px 24px; border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; }
+        .btn-block { width: 100%; }
+        .btn-primary { background: var(--dark-green); color: #fff; }
+        .btn-primary:hover { background: var(--dark-green-hover); }
+        .btn-danger { background: #fff; color: var(--red); border: 1.5px solid var(--red); }
+        .btn-danger:hover { background: var(--red); color: #fff; }
+        .btn-ghost { background: #fff; color: var(--dark-green); border: 1.5px solid var(--dark-green); }
+        .btn-ghost:hover { background: var(--green-light); }
+        .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+        .btn-row .btn { flex: 1; min-width: 140px; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ÜZENET DOBOZOK */
+        .msg-box { padding: 20px; border-radius: 14px; text-align: center; margin: 10px 0; }
+        .msg-info { background: #fff8e1; border: 1.5px dashed var(--accent-gold); color: #8a6d3b; }
+        .msg-error { background: #fff5f5; border: 1.5px dashed var(--red); color: var(--red); }
+        .msg-success { background: var(--green-light); border: 1.5px dashed var(--dark-green); color: var(--dark-green); }
+        .msg-box strong { display: block; font-size: 17px; margin-bottom: 6px; }
+
+        .loading-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 15px; }
+
+        .hint-text { font-size: 13px; color: var(--muted); margin-top: 16px; text-align: center; line-height: 1.5; }
+
+        /* SAJÁT NAPTÁR (a foglalas.html-lel egységes) */
+        .cal-wrap { border: 1.5px solid var(--border); border-radius: 14px; padding: 16px; max-width: 360px; background: #fff; margin: 0 auto 18px; }
+        .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .cal-title { font-weight: 700; font-size: 16px; color: var(--dark-green); font-family: 'Montserrat', sans-serif; }
+        .cal-nav { width: 36px; height: 36px; border: 1.5px solid var(--border); background: #fff; border-radius: 9px; font-size: 20px; color: var(--dark-green); cursor: pointer; line-height: 1; transition: all 0.15s; }
+        .cal-nav:hover:not(:disabled) { background: var(--green-light); border-color: var(--dark-green); }
+        .cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+        .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+        .cal-weekdays span { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; transition: all 0.12s; user-select: none; }
+        .cal-day.available { background: var(--green-light); color: var(--dark-green); }
+        .cal-day.available:hover { background: var(--dark-green); color: #fff; }
+        .cal-day.disabled { color: #ccc; cursor: not-allowed; background: #fafafa; }
+        .cal-day.empty { cursor: default; }
+        .cal-day.selected { background: var(--dark-green); color: #fff; border-color: var(--dark-green-hover); }
+        .cal-hint { font-size: 11px; color: var(--muted); margin-top: 10px; text-align: center; line-height: 1.4; }
+
+        /* IDŐPONTOK */
+        .time-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 10px; margin-top: 10px; }
+        .time-slot { padding: 12px 6px; border: 1.5px solid var(--border); border-radius: 10px; text-align: center; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; transition: all 0.15s; user-select: none; }
+        .time-slot:hover:not(.reserved) { border-color: var(--dark-green); color: var(--dark-green); background: var(--green-light); }
+        .time-slot.selected { background: var(--dark-green); color: white; border-color: var(--dark-green); }
+        .time-slot.reserved { background: #f5f5f5; color: #ccc; cursor: not-allowed; text-decoration: line-through; border-color: #eee; font-weight: 400; }
+        #modClosedMsg { display: none; background: #fff5f5; border: 2px dashed var(--red); padding: 16px; border-radius: 12px; text-align: center; color: var(--red); margin: 10px 0; font-size: 14px; }
+        #modSlotsLoading { display: none; color: var(--muted); font-size: 14px; padding: 8px 0; text-align: center; }
+
+        footer { background: #1a1a1a; color: #999; padding: 40px 8%; text-align: center; margin-top: 60px; font-size: 14px; }
+        footer strong { color: #ddd; }
+        footer a { color: #aaa; text-decoration: none; }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; position: absolute; top: 90px; left: 0; width: 100%; background: white; flex-direction: column; padding: 25px 0; box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+            .nav-links.open { display: flex; }
+            .nav-links a { margin: 10px 0; }
+            .hamburger { display: flex; }
+            header { padding: 0 5%; }
+            .card { padding: 28px 22px; }
+            .container { margin-top: -30px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">JÁZMIN LOVASUDVAR</a>
+    <nav class="nav-links" id="navLinks">
+        <a href="index.html">Főoldal</a>
+        <a href="rolunk.html">Rólunk</a>
+        <a href="biztonsag.html">Biztonság</a>
+        <a href="kapcsolat.html">Kapcsolat</a>
+        <a href="foglalas.html" class="btn-foglalas-nav">FOGLALÁS</a>
+    </nav>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menü">
+        <span></span><span></span><span></span>
+    </button>
+</header>
+
+<section class="page-header">
+    <h1>Foglalás kezelése</h1>
+    <p>Itt módosíthatod vagy lemondhatod a foglalásodat</p>
+</section>
+
+<main class="container">
+    <div class="card">
+
+        <!-- BETÖLTÉS -->
+        <div id="loadingState" class="loading-state">
+            ⏳ Foglalás betöltése...
+        </div>
+
+        <!-- HIBA (érvénytelen token, nem található foglalás) -->
+        <div id="errorState" style="display:none;">
+            <div class="msg-box msg-error">
+                <strong>⛔ A foglalás nem található</strong>
+                <span id="errorText">Ez a hivatkozás érvénytelen vagy lejárt. Kérjük, ellenőrizd a linket az e-mailedben.</span>
+            </div>
+            <p class="hint-text">
+                Ha segítségre van szükséged, hívj minket: <strong>+36 20 500 9664</strong><br>
+                vagy írj: info@jazminlovasudvar.hu
+            </p>
+        </div>
+
+        <!-- FOGLALÁS KEZELÉSE -->
+        <div id="manageState" style="display:none;">
+            <div class="section-label">A foglalásod adatai</div>
+            <div class="booking-info" id="bookingInfo">
+                <!-- ide tölti a JS a foglalás adatait -->
+            </div>
+
+            <!-- 24 órán belül: nincs lemondás/módosítás -->
+            <div id="tooLateBox" style="display:none;">
+                <div class="msg-box msg-info">
+                    <strong>⏰ A foglalás 24 órán belül van</strong>
+                    A lovaglás kevesebb mint 24 óra múlva esedékes, ezért online már nem
+                    módosítható és nem mondható le. Kérjük, hívj minket telefonon!
+                </div>
+                <p class="hint-text">
+                    📞 <strong>+36 20 500 9664</strong> – Szűcs Anikó
+                </p>
+            </div>
+
+            <!-- 24 órán túl: lehet lemondani/módosítani -->
+            <div id="actionsBox" style="display:none;">
+                <div class="btn-row">
+                    <button type="button" class="btn btn-ghost" id="btnModify" onclick="startModify()">
+                        🗓️ Időpont módosítása
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btnCancel" onclick="startCancel()">
+                        ✖ Foglalás lemondása
+                    </button>
+                </div>
+                <p class="hint-text">
+                    A módosítást és a lemondást legkésőbb a lovaglás előtt 24 órával lehet intézni.
+                </p>
+            </div>
+        </div>
+
+        <!-- SIKERES MŰVELET (lemondás/módosítás után) -->
+        <div id="doneState" style="display:none;">
+            <div class="msg-box msg-success" id="doneBox">
+                <strong id="doneTitle">✅ Kész!</strong>
+                <span id="doneText"></span>
+            </div>
+            <div style="text-align:center; margin-top:18px;">
+                <a href="index.html" class="btn btn-primary">Vissza a főoldalra</a>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    <p><strong>JÁZMIN LOVASUDVAR</strong> | Gyöngyös | +36 20 500 9664 | <a href="mailto:info@jazminlovasudvar.hu">info@jazminlovasudvar.hu</a></p>
+    <p style="margin-top:10px;"><a href="adatkezeles.html" style="color:#666;font-size:13px;">Adatkezelési tájékoztató</a></p>
+    <p style="margin-top:8px;">© 2026 Minden jog fenntartva.</p>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════
+// Jázmin Lovasudvar – Foglalás módosítása / lemondása
+// 1. LÉPÉS: token-betöltés + 24 órás ellenőrzés
+// ════════════════════════════════════════════════════
+
+const SUPABASE_URL = "https://ktzlczqhqnuluyuedhot.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0emxjenFocW51bHV5dWVkaG90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MjgxMjEsImV4cCI6MjA5NDEwNDEyMX0.yfNCvcMbSIWcrmyInCQo-1LX7Z4w5kT5drNxe6kfBSk";
+
+// A betöltött foglalás (globális, hogy a lemondás/módosítás is elérje)
+let currentBooking = null;
+// A manageState eredeti HTML-je – hogy a "Mégsem" után visszaállítható legyen
+let manageStateOriginalHTML = null;
+
+function toggleMenu() {
+    document.getElementById("navLinks").classList.toggle("open");
+}
+
+// Perc → "HH:MM"
+function minToStr(min) {
+    if (min === null || min === undefined) return "—";
+    const h = String(Math.floor(min / 60)).padStart(2, "0");
+    const m = String(min % 60).padStart(2, "0");
+    return h + ":" + m;
+}
+
+// "2026-05-29" → "2026. május 29."
+function formatDateHu(dateStr) {
+    const months = ["január","február","március","április","május","június",
+                    "július","augusztus","szeptember","október","november","december"];
+    const p = dateStr.split("-");
+    return p[0] + ". " + months[parseInt(p[1],10)-1] + " " + parseInt(p[2],10) + ".";
+}
+
+// A foglalás időpontja Date objektumként (helyi idő, iOS-biztos)
+function bookingDateTime(b) {
+    const p = b.date.split("-");
+    const h = Math.floor(b.start_time / 60);
+    const m = b.start_time % 60;
+    return new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10), h, m, 0);
+}
+
+// Hibaképernyő megjelenítése
+function showError(msg) {
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("manageState").style.display = "none";
+    document.getElementById("errorState").style.display = "block";
+    if (msg) document.getElementById("errorText").textContent = msg;
+}
+
+// A foglalás adatainak betöltése a token (UUID) alapján
+async function loadBooking() {
+    // A token az URL-ből: ?token=<uuid>
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+
+    if (!token) {
+        showError("Hiányzik az azonosító. Kérjük, használd az e-mailben kapott linket.");
+        return;
+    }
+
+    try {
+        // A foglalás lekérése az id (= token) alapján
+        const resp = await fetch(
+            SUPABASE_URL + "/rest/v1/bookings?id=eq." + encodeURIComponent(token) + "&select=*",
+            { headers: { "apikey": SUPABASE_KEY, "Authorization": "Bearer " + SUPABASE_KEY } }
+        );
+
+        if (!resp.ok) {
+            showError("Nem sikerült betölteni a foglalást. Kérjük, próbáld újra később.");
+            return;
+        }
+
+        const rows = await resp.json();
+        if (!rows || rows.length === 0) {
+            showError("Ehhez a hivatkozáshoz nem találtunk foglalást. Lehet, hogy már lemondták.");
+            return;
+        }
+
+        currentBooking = rows[0];
+        renderBooking();
+
+    } catch (err) {
+        console.error("Betöltési hiba:", err);
+        showError("Hálózati hiba történt. Kérjük, ellenőrizd az internetkapcsolatot.");
+    }
+}
+
+// A betöltött foglalás megjelenítése
+function renderBooking() {
+    const b = currentBooking;
+    const manage = document.getElementById("manageState");
+
+    // Első futáskor elmentjük az eredeti HTML-t; később visszaállítjuk
+    // (a lemondás/módosítás átírja a manageState belsejét, a "Mégsem" visszahozza)
+    if (manageStateOriginalHTML === null) {
+        manageStateOriginalHTML = manage.innerHTML;
+    } else {
+        manage.innerHTML = manageStateOriginalHTML;
+    }
+
+    // Foglalás adatai
+    document.getElementById("bookingInfo").innerHTML =
+        '<div class="bi-row"><span class="bi-k">Név</span><span class="bi-v">' + esc(b.name) + '</span></div>' +
+        '<div class="bi-row"><span class="bi-k">Szolgáltatás</span><span class="bi-v">' + esc(b.service) + '</span></div>' +
+        '<div class="bi-row"><span class="bi-k">Dátum</span><span class="bi-v">' + formatDateHu(b.date) + '</span></div>' +
+        '<div class="bi-row"><span class="bi-k">Időpont</span><span class="bi-v">' + minToStr(b.start_time) + '</span></div>';
+
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("manageState").style.display = "block";
+
+    // ── 24 órás ellenőrzés ──
+    const now = new Date();
+    const bookingTime = bookingDateTime(b);
+    const hoursUntil = (bookingTime.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    if (hoursUntil < 24) {
+        // 24 órán belül (vagy már elmúlt) – nincs online lemondás/módosítás
+        document.getElementById("tooLateBox").style.display = "block";
+        document.getElementById("actionsBox").style.display = "none";
+    } else {
+        // Van még idő – lehet lemondani/módosítani
+        document.getElementById("tooLateBox").style.display = "none";
+        document.getElementById("actionsBox").style.display = "block";
+    }
+}
+
+// Egyszerű HTML-escape
+function esc(s) {
+    return String(s == null ? "" : s)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+// ════════════════════════════════════════════════════
+// LEMONDÁS
+// ════════════════════════════════════════════════════
+function startCancel() {
+    const b = currentBooking;
+    // Megerősítő képernyő a foglalás adataival
+    const manage = document.getElementById("manageState");
+    manage.innerHTML =
+        '<div class="section-label">Foglalás lemondása</div>' +
+        '<div class="msg-box msg-error" style="text-align:left;">' +
+            '<strong>Biztosan lemondod ezt a foglalást?</strong>' +
+            'Ez a művelet nem vonható vissza. Az időpont felszabadul, és új foglalást kell leadnod, ha mégis jönnél.' +
+        '</div>' +
+        '<div class="booking-info">' +
+            '<div class="bi-row"><span class="bi-k">Szolgáltatás</span><span class="bi-v">' + esc(b.service) + '</span></div>' +
+            '<div class="bi-row"><span class="bi-k">Dátum</span><span class="bi-v">' + formatDateHu(b.date) + '</span></div>' +
+            '<div class="bi-row"><span class="bi-k">Időpont</span><span class="bi-v">' + minToStr(b.start_time) + '</span></div>' +
+        '</div>' +
+        '<div class="btn-row">' +
+            '<button type="button" class="btn btn-ghost" onclick="renderBooking()">Mégsem</button>' +
+            '<button type="button" class="btn btn-danger" id="confirmCancelBtn" onclick="doCancel()">✖ Igen, lemondom</button>' +
+        '</div>';
+}
+
+// A tényleges lemondás – az Edge Function cancel_booking blokkját hívja
+async function doCancel() {
+    const btn = document.getElementById("confirmCancelBtn");
+    if (btn) { btn.disabled = true; btn.textContent = "⏳ Lemondás folyamatban..."; }
+
+    try {
+        const resp = await fetch(SUPABASE_URL + "/functions/v1/Send-email", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + SUPABASE_KEY
+            },
+            body: JSON.stringify({
+                type: "cancel_booking",
+                bookingId: currentBooking.id
+            })
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+            // Sikeres lemondás képernyő
+            document.getElementById("manageState").style.display = "none";
+            document.getElementById("doneState").style.display = "block";
+            document.getElementById("doneTitle").textContent = "✅ Foglalásodat lemondtuk";
+            document.getElementById("doneText").textContent =
+                "Az időpont felszabadult, és e-mailben is visszaigazoltuk a lemondást. " +
+                "Ha mégis jönnél, bármikor foglalhatsz új időpontot.";
+        } else {
+            // Hiba – pl. 24 órán belül, vagy már lemondták
+            alert("⛔ " + (data.message || "A lemondás nem sikerült. Kérjük, hívd a lovardát."));
+            if (btn) { btn.disabled = false; btn.textContent = "✖ Igen, lemondom"; }
+        }
+    } catch (err) {
+        console.error("Lemondási hiba:", err);
+        alert("⛔ Hálózati hiba történt. Kérjük, próbáld újra, vagy hívd a lovardát: +36 20 500 9664");
+        if (btn) { btn.disabled = false; btn.textContent = "✖ Igen, lemondom"; }
+    }
+}
+
+// ════════════════════════════════════════════════════
+// MÓDOSÍTÁS – új nap + időpont választás
+// A szolgáltatás FIX marad, csak a date/start_time/end_time változik.
+// ════════════════════════════════════════════════════
+
+// A szolgáltatás időtartama a foglalás "service" szövege alapján
+function getServiceDuration(service) {
+    const s = (service || "").toLowerCase();
+    if (s.includes("póni")) return 25;
+    if (s.includes("túra") || s.includes("tura")) return 75;
+    if (s.includes("futószáras")) return 30;
+    return 30; // alapértelmezett
+}
+
+// Módosító naptár állapota
+let modCalYear, modCalMonth;
+let modSelectedDate = null;
+let modSelectedTime = null;
+
+const _pad = n => String(n).padStart(2, "0");
+
+function modGetMinDate() {
+    // 48 órás minimum (új időpontra ugyanúgy érvényes, mint a sima foglalásnál)
+    const d = new Date();
+    d.setHours(d.getHours() + 48);
+    return d;
+}
+
+function modIsDaySelectable(y, m, day) {
+    const dayEnd = new Date(y, m, day, 23, 59, 59);
+    return dayEnd.getTime() >= modGetMinDate().getTime();
+}
+
+// A módosítás-felület felépítése
+function startModify() {
+    const b = currentBooking;
+    const manage = document.getElementById("manageState");
+    manage.innerHTML =
+        '<div class="section-label">Időpont módosítása</div>' +
+        '<div class="booking-info">' +
+            '<div class="bi-row"><span class="bi-k">Szolgáltatás</span><span class="bi-v">' + esc(b.service) + '</span></div>' +
+            '<div class="bi-row"><span class="bi-k">Jelenlegi időpont</span><span class="bi-v">' + formatDateHu(b.date) + ' ' + minToStr(b.start_time) + '</span></div>' +
+        '</div>' +
+        '<div class="section-label">Válassz új napot</div>' +
+        '<div class="cal-wrap">' +
+            '<div class="cal-header">' +
+                '<button type="button" class="cal-nav" id="modCalPrev">‹</button>' +
+                '<span class="cal-title" id="modCalTitle"></span>' +
+                '<button type="button" class="cal-nav" id="modCalNext">›</button>' +
+            '</div>' +
+            '<div class="cal-weekdays"><span>H</span><span>K</span><span>Sze</span><span>Cs</span><span>P</span><span>Szo</span><span>V</span></div>' +
+            '<div class="cal-grid" id="modCalGrid"></div>' +
+            '<div class="cal-hint">Csak a kiemelt napok választhatók (min. 48 órával előre).</div>' +
+        '</div>' +
+        '<div class="section-label">Szabad időpontok</div>' +
+        '<p id="modSlotsLoading">⏳ Időpontok keresése...</p>' +
+        '<div id="modClosedMsg"></div>' +
+        '<div class="time-grid" id="modTimeGrid"></div>' +
+        '<div class="btn-row" style="margin-top:20px;">' +
+            '<button type="button" class="btn btn-ghost" onclick="renderBooking()">Mégsem</button>' +
+            '<button type="button" class="btn btn-primary" id="modSaveBtn" onclick="doModify()" disabled>✓ Új időpont mentése</button>' +
+        '</div>';
+
+    // Naptár indítása
+    const now = new Date();
+    modCalYear = now.getFullYear();
+    modCalMonth = now.getMonth();
+    modSelectedDate = null;
+    modSelectedTime = null;
+    renderModCalendar();
+
+    document.getElementById("modCalPrev").addEventListener("click", () => {
+        if (modCalMonth === 0) { modCalMonth = 11; modCalYear--; }
+        else { modCalMonth--; }
+        renderModCalendar();
+    });
+    document.getElementById("modCalNext").addEventListener("click", () => {
+        if (modCalMonth === 11) { modCalMonth = 0; modCalYear++; }
+        else { modCalMonth++; }
+        renderModCalendar();
+    });
+}
+
+// A módosító naptár kirajzolása
+function renderModCalendar() {
+    const grid = document.getElementById("modCalGrid");
+    const title = document.getElementById("modCalTitle");
+    if (!grid || !title) return;
+
+    const monthNames = ["január","február","március","április","május","június",
+                        "július","augusztus","szeptember","október","november","december"];
+    title.textContent = modCalYear + ". " + monthNames[modCalMonth];
+    grid.innerHTML = "";
+
+    const firstDay = new Date(modCalYear, modCalMonth, 1);
+    let startWeekday = firstDay.getDay();
+    startWeekday = (startWeekday === 0) ? 6 : startWeekday - 1;
+
+    for (let i = 0; i < startWeekday; i++) {
+        const e = document.createElement("div");
+        e.className = "cal-day empty";
+        grid.appendChild(e);
+    }
+
+    const daysInMonth = new Date(modCalYear, modCalMonth + 1, 0).getDate();
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement("div");
+        cell.className = "cal-day";
+        cell.textContent = day;
+        const selectable = modIsDaySelectable(modCalYear, modCalMonth, day);
+        const dateStr = modCalYear + "-" + _pad(modCalMonth + 1) + "-" + _pad(day);
+
+        if (selectable) {
+            cell.classList.add("available");
+            if (modSelectedDate === dateStr) cell.classList.add("selected");
+            cell.addEventListener("click", () => {
+                modSelectedDate = dateStr;
+                modSelectedTime = null;
+                document.getElementById("modSaveBtn").disabled = true;
+                renderModCalendar();
+                modGenerateSlots();
+            });
+        } else {
+            cell.classList.add("disabled");
+        }
+        grid.appendChild(cell);
+    }
+
+    const now = new Date();
+    const prevBtn = document.getElementById("modCalPrev");
+    prevBtn.disabled = (modCalYear < now.getFullYear()) ||
+        (modCalYear === now.getFullYear() && modCalMonth <= now.getMonth());
+}
+
+// Szabad időpontok generálása a kiválasztott napra
+async function modGenerateSlots() {
+    const grid = document.getElementById("modTimeGrid");
+    const loading = document.getElementById("modSlotsLoading");
+    const closed = document.getElementById("modClosedMsg");
+    grid.innerHTML = "";
+    closed.style.display = "none";
+    loading.style.display = "block";
+
+    const dateVal = modSelectedDate;
+    const d = new Date(dateVal);
+    const day = d.getDay();
+    const m = d.getMonth();
+    const isWeekend = day === 0 || day === 6;
+    const inSeason = m >= 3 && m <= 9;
+
+    if (!inSeason) {
+        loading.style.display = "none";
+        closed.style.display = "block";
+        closed.textContent = "Ebben az időszakban zárva vagyunk. Április–október között fogadunk vendégeket.";
+        return;
+    }
+
+    // Nyári időszámítás detektálás
+    const jan = new Date(d.getFullYear(), 0, 1);
+    const jul = new Date(d.getFullYear(), 6, 1);
+    const stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+    const isSummerTime = d.getTimezoneOffset() < stdOffset;
+
+    // Iskolai szünet lekérdezése
+    let isSchoolHoliday = false;
+    try {
+        const hResp = await fetch(
+            SUPABASE_URL + "/rest/v1/school_holidays?date_from=lte." + dateVal + "&date_to=gte." + dateVal + "&select=id",
+            { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }
+        );
+        if (hResp.ok) {
+            const holidays = await hResp.json();
+            isSchoolHoliday = holidays.length > 0;
+        }
+    } catch (e) { console.warn("Szünet lekérdezési hiba:", e); }
+
+    // Zárási idő: nyáron 20:00, télen 16:00
+    const endMin = isSummerTime ? 1200 : 960;
+
+    const timeWindows = [];
+    if (isWeekend) {
+        timeWindows.push({ from: 540, to: 600 });
+        timeWindows.push({ from: 840, to: endMin });
+    } else if (isSchoolHoliday) {
+        timeWindows.push({ from: 540, to: endMin });
+    } else {
+        timeWindows.push({ from: 840, to: endMin });
+    }
+
+    const dur = getServiceDuration(currentBooking.service);
+
+    try {
+        // A foglalt időpontok lekérése – a SAJÁT foglalásunkat kihagyjuk!
+        const resp = await fetch(
+            SUPABASE_URL + "/rest/v1/bookings?date=eq." + dateVal + "&status=neq.LEMONDVA&select=id,start_time,end_time,name",
+            { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }
+        );
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        let reserved = await resp.json();
+
+        // FONTOS: a saját foglalásunkat kivesszük a foglaltak közül –
+        // különben "ütközne önmagával", ha ugyanarra a napra módosít.
+        reserved = reserved.filter(r => r.id !== currentBooking.id);
+
+        loading.style.display = "none";
+
+        const isClosedDay = reserved.some(r => r.name === "ZÁRVA");
+        if (isClosedDay) {
+            closed.style.display = "block";
+            closed.textContent = "Ez a nap zárva van.";
+            return;
+        }
+
+        const possibleStarts = new Set();
+        timeWindows.forEach(({ from, to }) => {
+            for (let t = from; t <= to; t += 30) possibleStarts.add(t);
+            reserved.forEach(r => {
+                if (r.name !== "ZÁRVA" && r.end_time >= from && r.end_time <= to) {
+                    possibleStarts.add(r.end_time);
+                }
+            });
+        });
+
+        const sortedStarts = [...possibleStarts].sort((a, b) => a - b);
+        const now = new Date();
+        let count = 0;
+
+        for (const cur of sortedStarts) {
+            const fitsInWindow = timeWindows.some(({ from, to }) => cur >= from && cur + dur <= to);
+            if (!fitsInWindow) continue;
+
+            const tStr = minToStr(cur);
+            const slot = document.createElement("div");
+            slot.className = "time-slot";
+            slot.textContent = tStr;
+
+            // Ütközés-ellenőrzés
+            const conflict = reserved.some(r =>
+                r.name !== "ZÁRVA" && cur < r.end_time && (cur + dur) > r.start_time
+            );
+
+            // 48 órás ellenőrzés erre a konkrét időpontra
+            const slotDateTime = new Date(
+                parseInt(dateVal.split("-")[0],10),
+                parseInt(dateVal.split("-")[1],10)-1,
+                parseInt(dateVal.split("-")[2],10),
+                Math.floor(cur/60), cur%60, 0
+            );
+            const hoursDiff = (slotDateTime.getTime() - now.getTime()) / 3600000;
+
+            if (conflict || hoursDiff < 48) {
+                slot.classList.add("reserved");
+                slot.title = conflict ? "Foglalt" : "Minimum 48 órával előre foglalható";
+            } else {
+                slot.addEventListener("click", () => {
+                    document.querySelectorAll("#modTimeGrid .time-slot").forEach(s => s.classList.remove("selected"));
+                    slot.classList.add("selected");
+                    modSelectedTime = cur;
+                    document.getElementById("modSaveBtn").disabled = false;
+                });
+                count++;
+            }
+            grid.appendChild(slot);
+        }
+
+        if (count === 0) {
+            closed.style.display = "block";
+            closed.textContent = "Erre a napra nincs szabad időpont. Kérjük, válassz másik napot.";
+        }
+
+    } catch (err) {
+        console.error("Időpont-generálási hiba:", err);
+        loading.style.display = "none";
+        closed.style.display = "block";
+        closed.textContent = "Nem sikerült betölteni az időpontokat. Kérjük, próbáld újra.";
+    }
+}
+
+// A módosítás véglegesítése – az Edge Function modify_booking blokkját hívja
+async function doModify() {
+    if (!modSelectedDate || modSelectedTime === null) {
+        alert("⚠️ Válassz új napot és időpontot!");
+        return;
+    }
+    const btn = document.getElementById("modSaveBtn");
+    btn.disabled = true;
+    btn.textContent = "⏳ Mentés folyamatban...";
+
+    try {
+        const resp = await fetch(SUPABASE_URL + "/functions/v1/Send-email", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "apikey": SUPABASE_KEY,
+                "Authorization": "Bearer " + SUPABASE_KEY
+            },
+            body: JSON.stringify({
+                type: "modify_booking",
+                bookingId: currentBooking.id,
+                newDate: modSelectedDate,
+                newStartTime: modSelectedTime
+            })
+        });
+        const data = await resp.json();
+
+        if (data.success) {
+            document.getElementById("manageState").style.display = "none";
+            document.getElementById("doneState").style.display = "block";
+            document.getElementById("doneTitle").textContent = "✅ Időpont módosítva";
+            document.getElementById("doneText").textContent =
+                "Az új időpontod: " + formatDateHu(modSelectedDate) + " " + minToStr(modSelectedTime) +
+                ". A módosítást e-mailben is visszaigazoltuk.";
+        } else {
+            alert("⛔ " + (data.message || "A módosítás nem sikerült. Kérjük, hívd a lovardát."));
+            btn.disabled = false;
+            btn.textContent = "✓ Új időpont mentése";
+        }
+    } catch (err) {
+        console.error("Módosítási hiba:", err);
+        alert("⛔ Hálózati hiba történt. Kérjük, próbáld újra, vagy hívd a lovardát: +36 20 500 9664");
+        btn.disabled = false;
+        btn.textContent = "✓ Új időpont mentése";
+    }
+}
+
+// Indításkor betöltjük a foglalást
+loadBooking();
+</script>
+
+</body>
+</html>

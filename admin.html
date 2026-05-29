@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Jázmin Lovasudvar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+        <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --dark-green: #1a301a; --accent-gold: #b08d57; --bg-cream: #f0f2f5; --white: #ffffff; }
+        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--bg-cream); color: #333; line-height: 1.6; }
+
+        /* FELSŐ NAVIGÁCIÓ */
+        header { 
+            background-color: var(--white); height: 90px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 8%; box-shadow: 0 2px 15px rgba(0,0,0,0.05); 
+            position: sticky; top: 0; z-index: 1000; 
+        }
+        .logo { color: #2e7d32; font-weight: 700; font-size: 20px; text-decoration: none; text-transform: uppercase; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 13px; font-weight: 600; margin-left: 25px; text-transform: uppercase; }
+        .btn-logout { background: #6c757d; color: white !important; padding: 10px 20px; border-radius: 50px; cursor: pointer; border: none; font-family: inherit; font-size: 12px; }
+        .btn-switch { background: #2e7d32; color: white !important; padding: 10px 20px; border-radius: 50px; font-size: 12px; font-weight: 600; text-decoration: none; margin-left: 10px; }
+
+        /* LOGIN BOX */
+        .box { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; margin: 100px auto; }
+        
+        /* PANEL TARTALOM */
+        #adminPanel { width: 90%; max-width: 1200px; margin: 40px auto; background: white; padding: 30px; border-radius: 25px; display: block; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+        
+        input, select { padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; width: 100%; box-sizing: border-box; }
+        button { padding: 15px; background: var(--dark-green); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: 600; transition: 0.3s; width: 100%; font-family: inherit; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .quick-add-bar { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; 
+            background: #f8f9fa; padding: 25px; border-radius: 20px; margin-bottom: 30px; align-items: end; border: 1px solid #eee;
+        }
+        .quick-add-bar label { font-size: 12px; font-weight: bold; color: var(--dark-green); }
+        
+        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .control-item { background: #fffcf5; padding: 20px; border-radius: 15px; border: 1px solid #f0e6cc; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+        th { background: var(--dark-green); color: white; padding: 12px 10px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { padding: 10px; vertical-align: middle; }
+        tr:nth-child(even) td { background: #e8e8e8; }
+        tr:nth-child(odd) td { background: #ffffff; }
+        tr:hover td { background: #c8e6c9 !important; }
+        tr.sor-lemondva td { opacity: 0.5; }
+        .note-cell { font-size: 12px; color: #777; font-style: italic; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .note-cell:not(:empty) { color: #333; font-style: normal; }
+
+        /* Mobilbarát tábla */
+        .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+
+        @media (max-width: 768px) {
+            #adminPanel { width: 95%; padding: 15px; }
+            .control-grid { grid-template-columns: 1fr; }
+            .quick-add-bar { grid-template-columns: 1fr 1fr; }
+            th, td { padding: 8px 6px; font-size: 12px; }
+            .btn-orange, .btn-red { padding: 6px 8px; font-size: 10px; }
+        }
+
+        .status-pill { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .status-aktív { background-color: #d4edda; color: #155724; border: 2px solid #28a745; }
+        .status-lemondva { background-color: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+        .status-zarva { background-color: #e2e3e5; color: #383d41; border: 2px solid #6c757d; }
+        
+        .btn-orange { background: #f0ad4e; font-size: 11px; padding: 8px 12px; width: auto; border-radius: 5px; }
+        .btn-red { background: #d9534f; width: auto; padding: 10px 20px; margin-top: 5px; }
+
+        /* ISKOLAI SZÜNETEK */
+        .szunet-section { background: #f0f7f0; border: 1px solid #c8e6c9; border-radius: 20px; padding: 25px; margin-bottom: 30px; }
+        .szunet-section h3 { color: #2e7d32; margin: 0 0 15px; font-size: 15px; }
+        .szunet-add { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 10px; align-items: end; margin-bottom: 15px; }
+        .szunet-add label { font-size: 11px; font-weight: bold; color: #2e7d32; display: block; margin-bottom: 4px; }
+        .szunet-add input { margin: 0; }
+        .szunet-list { display: flex; flex-direction: column; gap: 8px; }
+        .szunet-item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 15px; border-radius: 10px; font-size: 14px; }
+        .szunet-item .szunet-name { font-weight: 600; color: #2e7d32; }
+        .szunet-item .szunet-dates { color: #666; font-size: 13px; }
+
+        footer { background: #1a1a1a; color: #999; padding: 40px 8%; text-align: center; margin-top: 60px; }
+    
+        .nav-btn:hover { background: rgba(255,255,255,0.15) !important; }
+        </style>
+</head>
+<body>
+
+<header style="background: #2d5016; color: white; padding: 15px 8%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000;">
+        <h1 style="font-size: 20px; margin: 0;">📅 Foglalások Admin</h1>
+        <div class="admin-nav" style="display: flex; gap: 10px; align-items: center;">
+            <a href="admin.html" class="nav-btn active" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; background: rgba(255,255,255,0.2); font-size: 14px; font-weight: 600;">📅 Foglalások</a>
+            <a href="admin-tudastar.html" class="nav-btn" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; transition: background 0.2s;">📚 Tudástár</a>
+            <a href="admin-bizonylatok.html" class="nav-btn" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; transition: background 0.2s;">📋 Bizonylatok</a>
+            <span style="color: rgba(255,255,255,0.3); margin: 0 5px;">|</span>
+            <a href="index.html" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; transition: background 0.2s;">← Főoldal</a>
+        </div>
+    </header>
+
+<div id="adminPanel">
+    <h2 style="margin-top:0; color: var(--dark-green);">Foglalt időpontok kezelése</h2>
+
+    <div class="quick-add-bar">
+        <div><label>Név</label><input type="text" id="qName" placeholder="Lovas neve"></div>
+        <div><label>Dátum</label><input type="date" id="qDate"></div>
+        <div><label>Időpont</label><select id="qTime"></select></div>
+        <div><label>Szolgáltatás</label>
+            <select id="qService">
+                <option value="25 perc Póni ismerkedő">25 perc Póni ismerkedő</option>
+                <option value="30 perc Futószáras oktatás">30 perc Futószáras oktatás</option>
+                <option value="60 perc Vezetett túra">60 perc Vezetett túra</option>
+                <option value="Edzés">Edzés</option>
+            </select>
+        </div>
+        <button style="background:#28a745; height: 45px;" onclick="manualRecord()">RÖGZÍTÉS</button>
+    </div>
+
+    <div class="control-grid">
+        <div class="control-item">
+            <label><strong>Nap teljes lezárása:</strong></label>
+            <input type="date" id="blockDate">
+            <button class="btn-red" onclick="blockDay()">ZÁRVA JELZÉSE</button>
+        </div>
+        <div class="control-item">
+            <label><strong>Szűrés dátumra:</strong></label>
+            <input type="date" id="szuro" onchange="szures()">
+            <button class="btn-logout" style="width:100%; margin-top:10px;" onclick="load()">ÖSSZES MUTATÁSA</button>
+        </div>
+    </div>
+
+    <!-- ISKOLAI SZÜNETEK -->
+    <div class="szunet-section">
+        <h3>📅 Iskolai szünetek kezelése <span style="font-weight:400;font-size:12px;color:#666;">(szünet alatt 09:00-tól nyitva)</span></h3>
+        <div class="szunet-add">
+            <div>
+                <label>Szünet neve</label>
+                <input type="text" id="szunetNev" placeholder="pl. Nyári szünet">
+            </div>
+            <div>
+                <label>Kezdete</label>
+                <input type="date" id="szunetTol">
+            </div>
+            <div>
+                <label>Vége</label>
+                <input type="date" id="szunetIg">
+            </div>
+            <button style="background:#2e7d32;height:45px;width:auto;padding:0 20px;" onclick="addHoliday()">+ HOZZÁAD</button>
+        </div>
+        <div class="szunet-list" id="szunetLista">
+            <p style="color:#999;font-size:13px;">Betöltés...</p>
+        </div>
+    </div>
+
+    <div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Dátum</th>
+                <th>Idő</th>
+                <th>Név / Telefon</th>
+                <th>E-mail</th>
+                <th>Szolgáltatás</th>
+                <th>Megjegyzés</th>
+                <th>Állapot</th>
+                <th>Művelet</th>
+            </tr>
+        </thead>
+        <tbody id="lista"></tbody>
+    </table>
+    </div>
+</div>
+
+<footer>
+    <p><strong>JÁZMIN LOVASUDVAR ADMINISZTRÁCIÓ</strong><br>3200 Gyöngyös, Bene u. 14. | +36 20 500 9664</p>
+</footer>
+
+<!-- ✅ KÖZPONTI AUTH RENDSZER (session védelem + 15 perc auto-logout + kijelentkezés gomb) -->
+<script src="auth-system.js"></script>
+
+<script>
+    // ── Supabase konfiguráció ──
+    // FIGYELEM: a SUPABASE_URL / SUPABASE_ANON_KEY már az auth-system.js-ben
+    // deklarálva van – itt NEM deklaráljuk újra (const ütközést okozna).
+    const ADMIN_API_BASE = SUPABASE_URL + "/rest/v1";
+    const API = ADMIN_API_BASE + "/bookings";
+
+    // ── Supabase JS kliens: az auth-system.js már létrehozta (supabaseClient) ──
+    const sb = window.supabaseClient;
+
+    let adatok = [];
+    let authHeaders = {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json"
+    };
+
+    const EDGE_URL = SUPABASE_URL + "/functions/v1/Send-email";
+
+    // ── Időpont-választó feltöltése (auth-tól független UI előkészítés) ──
+    document.addEventListener('DOMContentLoaded', () => {
+        const select = document.getElementById('qTime');
+        for (let t = 480; t <= 1170; t += 30) {
+            let h = Math.floor(t / 60).toString().padStart(2, '0');
+            let m = (t % 60).toString().padStart(2, '0');
+            let opt = document.createElement('option');
+            opt.value = opt.innerText = `${h}:${m}`;
+            select.appendChild(opt);
+        }
+        const qDate = document.getElementById('qDate');
+        if (qDate) qDate.valueAsDate = new Date();
+    });
+
+    // ── AUTH: az auth-system.js kezeli a belépést és a védelmet ──
+    // Ha nincs érvényes admin session, az auth-system.js átirányít a login oldalra.
+    // Amikor kész, kibocsát egy 'authReady' eseményt – innen indul az adatbetöltés.
+    window.addEventListener('authReady', (e) => {
+        console.log('✅ authReady – admin panel adatainak betöltése');
+        // A bejelentkezett felhasználó access token-je a biztonságos API hívásokhoz
+        if (e.detail && e.detail.session) {
+            authHeaders["Authorization"] = "Bearer " + e.detail.session.access_token;
+        }
+        load();
+        loadHolidays();
+    });
+
+    // ── Összes foglalás betöltése Supabase-ből ──
+    async function load() {
+        document.getElementById('lista').innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:30px;">⏳ Betöltés...</td></tr>';
+        try {
+            const resp = await fetch(API + "?order=date.desc,start_time.asc&select=*", { headers: authHeaders });
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            adatok = await resp.json();
+            tabla(adatok);
+        } catch(e) {
+            document.getElementById('lista').innerHTML = '<tr><td colspan="8" style="color:red;padding:20px;">Hiba a betöltéskor: ' + e.message + '</td></tr>';
+            console.error(e);
+        }
+    }
+
+    // ── Táblázat megjelenítése ──
+    function tabla(d) {
+        const tbody = document.getElementById('lista');
+        if (d.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#999;padding:30px;">Nincs találat</td></tr>';
+            return;
+        }
+        tbody.innerHTML = "";
+        d.forEach(i => {
+            const statusz = (i.status || "AKTÍV").toUpperCase();
+            const isZarva = statusz === "ZÁRVA" || i.name === "ZÁRVA";
+            const rowId = i.id || '-';
+            // start_time konvertálása HH:MM formátumba
+            const timeStr = i.start_time !== undefined
+                ? String(Math.floor(i.start_time/60)).padStart(2,'0') + ':' + String(i.start_time%60).padStart(2,'0')
+                : '';
+            const calId = i.calendar_event_id || '';
+
+            tbody.innerHTML += `<tr class="${statusz === 'LEMONDVA' ? 'sor-lemondva' : ''}">
+                <td>${i.date || ''}</td>
+                <td><strong>${isZarva ? 'Egész nap' : timeStr}</strong></td>
+                <td><strong>${i.name || ''}</strong>${i.phone ? '<br><a href="tel:' + i.phone.replace(/[^\d+]/g,'') + '" style="font-size:12px;color:var(--dark-green);font-weight:600;text-decoration:none">📞 ' + i.phone + '</a>' : ''}</td>
+                <td style="font-size:12px">${i.email && i.email !== 'ADMIN' ? i.email : ''}</td>
+                <td>${isZarva ? 'SZÜNNAP' : (i.service || '—')}</td>
+                <td class="note-cell" title="${i.note || ''}">${i.note || '—'}</td>
+                <td><span class="status-pill status-${isZarva ? 'zarva' : statusz.toLowerCase()}">${isZarva ? 'ZÁRVA' : statusz}</span></td>
+                <td style="white-space:nowrap;">
+                    ${statusz === 'AKTÍV' && !isZarva ?
+                        `<button class="btn-orange" onclick="lemond('${rowId}','${i.email || ''}','${(i.name||'').replace(/'/g,"\\'")}','${i.date}','${timeStr}','${i.service}','${calId}')">🌧 Eső</button>` : ''}
+                    ${!isZarva ?
+                        `<button class="btn-red" style="margin-top:4px;font-size:10px;" onclick="torol('${rowId}','${calId}')">🗑</button>` : ''}
+                </td>
+            </tr>`;
+        });
+    }
+
+    // ── Szűrés dátumra ──
+    function szures() {
+        const nap = document.getElementById('szuro').value;
+        tabla(nap ? adatok.filter(x => x.date === nap) : adatok);
+    }
+
+    // ── Eső miatti lemondás + e-mail küldés + naptár törlés ──
+    async function lemond(bookingId, email, nev, datum, idopont, szolgi, calendarEventId) {
+        if (!confirm("Biztosan lemondod és küldöd az e-mailt " + nev + " részére?")) return;
+
+        try {
+            const patchResp = await fetch(API + "?id=eq." + bookingId, {
+                method: "PATCH",
+                headers: { ...authHeaders, "Prefer": "return=minimal" },
+                body: JSON.stringify({ status: "LEMONDVA" })
+            });
+            if (!patchResp.ok) throw new Error("Supabase PATCH: " + patchResp.status);
+
+            // ── Naptár törlése ──
+            if (calendarEventId) {
+                try {
+                    const calResp = await fetch("https://calendar-bot.jazminlovasudvar-gyongyos.workers.dev/", {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ eventId: calendarEventId })
+                    });
+                    const calData = await calResp.json();
+                    if (!calResp.ok) console.warn("Naptár törlési hiba:", calData);
+                } catch(calErr) { console.warn("Naptár worker hiba:", calErr); }
+            }
+
+            if (email && email !== 'ADMIN') {
+                const [h, m] = idopont.split(':').map(Number);
+                const startMin = h * 60 + m;
+                await fetch(EDGE_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY, "Authorization": "Bearer " + SUPABASE_ANON_KEY },
+                    body: JSON.stringify({ type: "cancellation", booking: { name: nev, email, date: datum, start_time: startMin } })
+                });
+                alert("✅ Lemondva, e-mail elküldve" + (calendarEventId ? " és naptárból törölve!" : "!"));
+            } else {
+                alert("✅ Lemondva" + (calendarEventId ? " és naptárból törölve!" : "."));
+            }
+            load();
+        } catch(e) {
+            alert("❌ Hiba: " + e.message);
+            console.error(e);
+        }
+    }
+
+    // ── Foglalás törlése (véglegesen) + naptárból is ──
+    async function torol(bookingId, calendarEventId) {
+        if (!confirm("VÉGLEGESEN törlöd ezt a rekordot? Ez nem vonható vissza!")) return;
+        try {
+            const resp = await fetch(API + "?id=eq." + bookingId, {
+                method: "DELETE",
+                headers: authHeaders
+            });
+            if (!resp.ok) throw new Error("Supabase DELETE: " + resp.status);
+
+            // ── Naptár törlése ──
+            if (calendarEventId) {
+                try {
+                    await fetch("https://calendar-bot.jazminlovasudvar-gyongyos.workers.dev/", {
+                        method: "DELETE",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ eventId: calendarEventId })
+                    });
+                } catch(calErr) { console.warn("Naptár worker hiba:", calErr); }
+            }
+            load();
+        } catch(e) {
+            alert("❌ Törlési hiba: " + e.message);
+        }
+    }
+
+    // ── Kézi rögzítés ──
+    async function manualRecord() {
+        const name = document.getElementById('qName').value.trim();
+        const date = document.getElementById('qDate').value;
+        if (!name || !date) return alert("Név és dátum kötelező!");
+
+        const timeStr = document.getElementById('qTime').value;
+        const startMin = parseInt(timeStr.split(':')[0])*60 + parseInt(timeStr.split(':')[1]);
+        const payload = {
+            date: date,
+            start_time: startMin,
+            end_time: startMin + 30,
+            name: name,
+            service: document.getElementById('qService').value,
+            status: "AKTÍV",
+            email: "admin@jazminlovasudvar.hu",
+            phone: ""
+        };
+
+        try {
+            const resp = await fetch(API, {
+                method: "POST",
+                headers: { ...authHeaders, "Prefer": "return=minimal" },
+                body: JSON.stringify(payload)
+            });
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            document.getElementById('qName').value = "";
+            alert("✅ Rögzítve!");
+            load();
+        } catch(e) {
+            alert("❌ Rögzítési hiba: " + e.message);
+        }
+    }
+
+    // ── Nap lezárása ──
+    async function blockDay() {
+        const date = document.getElementById('blockDate').value;
+        if (!date) return alert("Válassz dátumot!");
+        if (!confirm(date + " napot ZÁRVA jelzed?")) return;
+
+        const payload = {
+            date: date,
+            name: "ZÁRVA",
+            status: "ZÁRVA",
+            start_time: 0,
+            end_time: 1440,
+            service: "SZÜNNAP",
+            email: "admin@jazminlovasudvar.hu",
+            phone: ""
+        };
+
+        try {
+            const resp = await fetch(API, {
+                method: "POST",
+                headers: { ...authHeaders, "Prefer": "return=minimal" },
+                body: JSON.stringify(payload)
+            });
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            alert("✅ " + date + " lezárva!");
+            load();
+        } catch(e) {
+            alert("❌ Hiba: " + e.message);
+        }
+    }
+
+    // ── Iskolai szünetek betöltése ──
+    const HOLIDAYS_API = SUPABASE_URL + "/rest/v1/school_holidays";
+
+    async function loadHolidays() {
+        try {
+            const resp = await fetch(HOLIDAYS_API + "?order=date_from.asc&select=*", { headers: authHeaders });
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            const data = await resp.json();
+            const lista = document.getElementById('szunetLista');
+            if (data.length === 0) {
+                lista.innerHTML = '<p style="color:#999;font-size:13px;">Még nincs rögzített szünet.</p>';
+                return;
+            }
+            lista.innerHTML = data.map(h => `
+                <div class="szunet-item">
+                    <div>
+                        <span class="szunet-name">${h.name}</span>
+                        <span class="szunet-dates"> &nbsp;|&nbsp; ${h.date_from} – ${h.date_to}</span>
+                    </div>
+                    <button class="btn-red" style="font-size:11px;padding:6px 12px;" onclick="deleteHoliday('${h.id}')">🗑 Törlés</button>
+                </div>
+            `).join('');
+        } catch(e) {
+            document.getElementById('szunetLista').innerHTML = '<p style="color:red;font-size:13px;">Hiba: ' + e.message + '</p>';
+        }
+    }
+
+    // ── Iskolai szünet hozzáadása ──
+    async function addHoliday() {
+        const name = document.getElementById('szunetNev').value.trim();
+        const from = document.getElementById('szunetTol').value;
+        const to   = document.getElementById('szunetIg').value;
+        if (!name || !from || !to) return alert("Minden mező kötelező!");
+        if (from > to) return alert("A kezdő dátum nem lehet nagyobb a végdátumnál!");
+        try {
+            const resp = await fetch(HOLIDAYS_API, {
+                method: "POST",
+                headers: { ...authHeaders, "Prefer": "return=minimal" },
+                body: JSON.stringify({ name, date_from: from, date_to: to })
+            });
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            document.getElementById('szunetNev').value = "";
+            document.getElementById('szunetTol').value = "";
+            document.getElementById('szunetIg').value = "";
+            loadHolidays();
+        } catch(e) {
+            alert("❌ Hiba: " + e.message);
+        }
+    }
+
+    // ── Iskolai szünet törlése ──
+    async function deleteHoliday(id) {
+        if (!confirm("Törlöd ezt a szünetet?")) return;
+        try {
+            const resp = await fetch(HOLIDAYS_API + "?id=eq." + id, {
+                method: "DELETE",
+                headers: authHeaders
+            });
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            loadHolidays();
+        } catch(e) {
+            alert("❌ Törlési hiba: " + e.message);
+        }
+    }
+</script>
+</body>
+</html>

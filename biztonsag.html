@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biztonság - Jázmin Lovasudvar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐴</text></svg>">
+    
+    <style>
+        :root { 
+            --dark-green: #2e7d32; 
+            --accent-gold: #b08d57; 
+            --bg-cream: #faf8f5; 
+            --white: #ffffff; 
+            --text-dark: #2c3e50;
+            --danger-red: #d32f2f;
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--bg-cream); color: var(--text-dark); line-height: 1.8; overflow-x: hidden; }
+        h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--dark-green); margin-top: 0; }
+
+        header { 
+            background-color: var(--white); height: 90px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 8%; box-shadow: 0 2px 15px rgba(0,0,0,0.05); 
+            position: sticky; top: 0; z-index: 1000; 
+        }
+
+        .logo { color: var(--dark-green); font-weight: 700; font-size: 20px; text-decoration: none; letter-spacing: 1px; }
+        .nav-links { display: flex; align-items: center; gap: 30px; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 13px; font-weight: 600; text-transform: uppercase; transition: 0.3s; }
+        .nav-links a:hover { color: var(--dark-green); }
+        .btn-foglalas-nav { background-color: var(--dark-green); color: white !important; padding: 12px 25px; border-radius: 50px; }
+
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; border: none; background: none; padding: 10px; }
+        .hamburger span { width: 30px; height: 3px; background-color: var(--dark-green); border-radius: 2px; }
+
+        .page-header { 
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('hero.jpg'); 
+            background-size: cover; background-position: center; 
+            height: 35vh; display: flex; justify-content: center; align-items: center; 
+            color: white; text-align: center; 
+        }
+        .page-header h1 { color: white; font-size: clamp(28px, 4vw, 42px); text-transform: uppercase; letter-spacing: 2px; }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 60px 5%; }
+        .section-intro { text-align: center; margin-bottom: 50px; }
+        .section-intro p { font-size: 18px; color: #666; }
+
+        .safety-card {
+            background: white;
+            padding: 40px;
+            border-radius: 25px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            border-left: 6px solid var(--accent-gold);
+            transition: transform 0.3s ease;
+        }
+        .safety-card:hover { transform: translateY(-5px); }
+        .safety-card h3 { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+
+        .tips-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 15px; 
+            margin-top: 25px;
+        }
+        .tip-item { 
+            background: #f1f8e9; 
+            padding: 15px; 
+            border-radius: 15px; 
+            font-size: 14px; 
+            font-weight: 600;
+            display: flex; 
+            align-items: center; 
+            gap: 12px;
+            color: var(--dark-green);
+        }
+        .tip-item span { font-size: 18px; }
+
+        .risk-notice {
+            border-left: 6px solid var(--danger-red);
+            background: #fff5f5;
+            padding: 35px;
+            margin-top: 50px;
+            border-radius: 0 25px 25px 0;
+            box-shadow: var(--shadow);
+        }
+        .risk-notice h3 { color: var(--danger-red); font-size: 16px; text-transform: uppercase; margin-bottom: 15px; }
+        .risk-notice p { font-size: 14px; margin: 0; color: #555; }
+
+        .sticky-booking-btn {
+            display: none; 
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--dark-green);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 2000;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .horse-icon { font-size: 24px; line-height: 1; }
+
+                footer { background: #1a1a1a; color: #999; padding: 40px 8%; text-align: center; margin-top: 60px; font-size: 14px; width: 100%; box-sizing: border-box; }
+        footer strong { color: #ddd; }
+
+        @media (max-width: 950px) {
+            .hamburger { display: flex; }
+            .nav-links { 
+                display: none; position: absolute; top: 90px; left: 0; 
+                width: 100%; background: white; flex-direction: column; 
+                padding: 30px 0; box-shadow: 0 10px 15px rgba(0,0,0,0.1); 
+            }
+            .nav-links.active { display: flex; }
+        }
+
+        @media (max-width: 600px) {
+            .sticky-booking-btn {
+                display: flex; 
+                bottom: 20px;
+                right: 20px;
+                padding: 10px 20px;
+                font-size: 12px;
+            }
+            .horse-icon { font-size: 20px; }
+        }
+
+        @keyframes horseJump {
+            from { transform: translateY(0); }
+            to { transform: translateY(-3px); }
+        }
+        .sticky-booking-btn:hover .horse-icon { animation: horseJump 0.5s infinite alternate; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">JÁZMIN LOVASUDVAR</a>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menü">
+        <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links" id="navLinks">
+        <a href="index.html">Főoldal</a>
+        <a href="rolunk.html">Rólunk</a>
+        <a href="biztonsag.html">Biztonság</a>
+        <a href="kapcsolat.html">Kapcsolat</a>
+        <a href="foglalas.html" class="btn-foglalas-nav">FOGLALÁS</a>
+    </nav>
+</header>
+
+<section class="page-header">
+    <h1>Biztonság mindenek felett</h1>
+</section>
+
+<main class="container">
+    <div class="section-intro">
+        <h2>Nálunk Ön és gyermeke jó kezekben van</h2>
+        <p>A lovaglás nálunk nem csak élmény, hanem szigorú szakmai szabályok mentén felépített tevékenység.</p>
+    </div>
+
+    <div class="safety-card">
+        <h3><span>🛡️</span> Felkészült lovak</h3>
+        <p>Jázmin és Mary Lu speciálisan gyerekek mellé választott, rendkívül nyugodt vérmérsékletű lovak. Rendszeres mozgatásuk és képzésük garantálja, hogy váratlan helyzetekben is megőrizzék hidegvérüket.</p>
+    </div>
+
+    <div class="safety-card">
+        <h3><span>🎓</span> Szakértő felügyelet</h3>
+        <p>A foglalkozások során Szűcs Anikó oktató egyetlen pillanatra sem téveszti szem elől a gyermeket. A ló folyamatosan kézen vezetett, így az irányítás mindvégig az oktató kezében marad.</p>
+    </div>
+
+    <div class="safety-card">
+        <h3><span>🏠</span> Családias légkör</h3>
+        <p>A nagy lovardákkal ellentétben nálunk nincs tömeg, ami minimalizálja a külső zavaró tényezőket, így a ló és a gyermek is maximálisan egymásra figyelhet.</p>
+    </div>
+
+    <div class="safety-card" style="border-left-color: var(--dark-green);">
+        <h3><span>💡</span> Tanácsok az első órához</h3>
+        <p>A biztonságos és kényelmes élmény érdekében javasoljuk az alábbiakat:</p>
+        <div class="tips-grid">
+            <div class="tip-item"><span>👖</span> Kényelmes hosszú nadrág</div>
+            <div class="tip-item"><span>👟</span> Zárt, kemény talpú cipő</div>
+            <div class="tip-item"><span>💇</span> Hosszú haj összefogva</div>
+            <div class="tip-item"><span>💧</span> Szénsavmentes víz</div>
+            <div class="tip-item" style="background:#fff3e0; color:#e65100;"><span>⚠</span> A ló mögé ne álljunk!</div>
+        </div>
+    </div>
+
+    <div class="risk-notice">
+        <h3>Fontos tájékoztatás a kockázatokról</h3>
+        <p>
+            Tájékoztatjuk a tisztelt szülőket, hogy a ló természeténél fogva menekülő állat. A foglalkozások során a lovak külső hatásokra (hirtelen zaj, mozgás) megijedhetnek, ami a lovas egyensúlyvesztéséhez vagy leeséséhez vezethet. A legnagyobb odafigyelés és szakszerű felügyelet mellett is fennáll a sérülés minimális kockázata, amit a lovaglás megkezdésével a szülő tudomásul vesz.
+        </p>
+    </div>
+</main>
+
+
+    <!-- SZÜLŐI HOZZÁJÁRULÁS SZEKCIÓ -->
+    <section class="safety-section" style="background: #f0f7e9;">
+        <div class="container">
+            <div class="section-header">
+                <h2>👨‍👩‍👧 Szülői hozzájárulás és felelősségvállalás</h2>
+                <p class="section-subtitle">Gyermekek lovasoktatásához szükséges nyilatkozat</p>
+            </div>
+
+            <div class="info-box" style="background: white; padding: 30px; border-radius: 15px; margin: 30px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <h3 style="color: var(--dark-green); font-size: 20px; margin-bottom: 20px;">📋 Miért szükséges a szülői nyilatkozat?</h3>
+                <p style="font-size: 16px; line-height: 1.8; margin-bottom: 15px;">
+                    A <strong>Polgári Törvénykönyv (2013. évi V. törvény)</strong> alapján:
+                </p>
+                <ul style="font-size: 16px; line-height: 1.8; margin-left: 25px; margin-bottom: 20px;">
+                    <li><strong>14 év alatti gyermekek</strong> cselekvőképtelenek</li>
+                    <li><strong>14-18 év közötti fiatalok</strong> korlátozottan cselekvőképesek</li>
+                    <li>Ezért <strong>szülői hozzájárulás szükséges</strong> a lovasoktatásban való részvételhez</li>
+                </ul>
+                
+                <p style="font-size: 16px; line-height: 1.8; margin-bottom: 15px;">
+                    A <strong>14/2008. (XII. 20.) ÖM rendelet</strong> előírja, hogy lovas oktatás során 
+                    megfelelő szakképesítéssel rendelkező oktató foglalkozzon a gyermekekkel. 
+                    Oktatóink rendelkeznek a szükséges végzettségekkel.
+                </p>
+            </div>
+
+            <div class="info-box" style="background: white; padding: 30px; border-radius: 15px; margin: 30px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <h3 style="color: var(--dark-green); font-size: 20px; margin-bottom: 20px;">📄 Mit tartalmaz a nyilatkozat?</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <div>
+                        <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 10px;">✅ Gyermek adatai</h4>
+                        <p style="font-size: 14px; color: #666;">Név, születési dátum, lakcím</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 10px;">🏥 Egészségügyi nyilatkozat</h4>
+                        <p style="font-size: 14px; color: #666;">A szülő kijelenti, hogy gyermeke egészségi állapota alapján részt vehet lovaglásban. A lovaglás terápiás hatású (Down-szindróma, asztma, mozgásszervi problémák, autizmus).</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 10px;">⚠️ Kockázatvállalás és felelősség</h4>
+                        <p style="font-size: 14px; color: #666;">A szülő vállalja a felelősséget gyermeke testi épségéért. Tudomásul veszi, hogy a lovaglás fokozott veszéllyel járó tevékenység.</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 10px;">📜 Házirend és biztonsági szabályok</h4>
+                        <p style="font-size: 14px; color: #666;">A szülő kötelezi magát és gyermekét a lovasudvar házirendjének és biztonsági előírásainak betartására. Védősisak viselése kötelező.</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 10px;">🔒 Adatkezelés</h4>
+                        <p style="font-size: 14px; color: #666;">GDPR szerinti hozzájárulás</p>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 10px;">✍️ Szülői aláírás</h4>
+                        <p style="font-size: 14px; color: #666;">Dátum és kézjegyű aláírás</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-box" style="background: #fff9e6; padding: 30px; border-radius: 15px; margin: 30px 0; border-left: 4px solid #f39c12;">
+                <h3 style="color: #d68910; font-size: 20px; margin-bottom: 15px;">⚡ Fontos információk</h3>
+                <ul style="font-size: 16px; line-height: 1.8; margin-left: 25px;">
+                    <li><strong>Első óra előtt:</strong> A nyilatkozatot kinyomtatva és kitöltve kell elhozni az első alkalomra</li>
+                    <li><strong>Védősisak kötelező:</strong> Minden lovas tevékenység során kötelező a védősisak viselése</li>
+                    <li><strong>Érvényesség:</strong> A nyilatkozat határozatlan ideig érvényes, bármikor visszavonható</li>
+                    <li><strong>2 példány:</strong> Egy példány a szülőnél, egy a lovasudvarnál marad</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px;">
+                <a href="szuloi-nyilatkozat.pdf" download class="btn-download" style="display: inline-block; background: var(--dark-green); color: white; padding: 18px 40px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 18px; box-shadow: 0 4px 12px rgba(45, 80, 22, 0.3); transition: all 0.3s;">
+                    📥 Nyilatkozat letöltése (PDF)
+                </a>
+                <p style="font-size: 14px; color: #666; margin-top: 15px;">Kinyomtatandó és kitöltendő az első óra előtt</p>
+            </div>
+
+            <div class="info-box" style="background: white; padding: 30px; border-radius: 15px; margin: 40px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <h3 style="color: var(--dark-green); font-size: 20px; margin-bottom: 15px;">❓ Gyakori kérdések</h3>
+                
+                <div style="margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 10px;">
+                    <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 8px;">Kell-e orvosi igazolás is?</h4>
+                    <p style="font-size: 15px; color: #555;">Nem kötelező, de különleges egészségügyi állapot esetén (pl. epilepszia, súlyos allergia) ajánlott orvosi konzultáció.</p>
+                </div>
+
+                <div style="margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 10px;">
+                    <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 8px;">Mi történik, ha a gyermek allergiás?</h4>
+                    <p style="font-size: 15px; color: #555;">Az egészségügyi információk rovatban kérjük feltüntetni minden allergiát. Szükség esetén egyénre szabott intézkedéseket teszünk.</p>
+                </div>
+
+                <div style="margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 10px;">
+                    <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 8px;">Változott valami, frissíteni kell a nyilatkozatot?</h4>
+                    <p style="font-size: 15px; color: #555;">Igen! Ha egészségügyi állapot, elérhetőség vagy bármilyen fontos adat változik, kérjük jelezze és töltse ki újra.</p>
+                </div>
+
+                <div style="margin: 20px 0; padding: 15px; background: #f9f9f9; border-radius: 10px;">
+                    <h4 style="color: var(--dark-green); font-size: 16px; margin-bottom: 8px;">Mikor kell aláírni a nyilatkozatot?</h4>
+                    <p style="font-size: 15px; color: #555;">A legelső óra előtt kérjük aláírva elhozni. Online foglaláskor előzetesen elfogadható, de papíron is szükséges az aláírás.</p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; padding: 30px; background: white; border-radius: 15px;">
+                <h3 style="color: var(--dark-green); margin-bottom: 15px;">📞 Kérdése van a nyilatkozattal kapcsolatban?</h3>
+                <p style="font-size: 16px; margin-bottom: 20px;">Hívjon minket bizalommal!</p>
+                <p style="font-size: 18px; font-weight: 700; color: var(--dark-green);">+36 20 500 9664</p>
+                <p style="font-size: 16px; color: #666; margin-top: 10px;">info@jazminlovasudvar.hu</p>
+            </div>
+        </div>
+    </section>
+
+<footer>
+    <p><strong>JÁZMIN LOVASUDVAR</strong> | Gyöngyös, Bene u. 14. | +36 20 500 9664 | <a href="mailto:info@jazminlovasudvar.hu" style="color:#aaa;text-decoration:none;">info@jazminlovasudvar.hu</a></p>
+    <p style="margin-top:10px;"><a href="adatkezeles.html" style="color:#666;text-decoration:none;font-size:13px;">Adatkezelési tájékoztató</a></p>
+    <p style="margin-top:8px;">© 2026 Minden jog fenntartva.</p>
+    <a href="admin-login.html" style="color:#444;text-decoration:none;font-size:13px;margin-top:15px;display:inline-block;padding:8px 16px;border:1px solid #444;border-radius:20px;">🔐 Admin</a>
+</footer>
+
+<script>
+    function toggleMenu() {
+        document.getElementById("navLinks").classList.toggle("active");
+    }
+</script>
+
+<a href="foglalas.html" class="sticky-booking-btn">
+    <span class="horse-icon">🐴</span>
+    <span class="btn-text">FOGLALÁS MOST</span>
+</a>
+
+</body>
+</html>

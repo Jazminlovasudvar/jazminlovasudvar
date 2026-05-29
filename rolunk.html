@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rólunk - Jázmin Lovasudvar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐴</text></svg>">
+    
+    <style>
+        :root { 
+            --dark-green: #2e7d32; 
+            --accent-gold: #b08d57; 
+            --bg-cream: #faf8f5; 
+            --white: #ffffff; 
+            --text-dark: #2c3e50;
+        }
+
+        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--bg-cream); color: var(--text-dark); line-height: 1.8; overflow-x: hidden; }
+        h1, h2, h3 { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--dark-green); margin-top: 0; }
+
+        /* HEADER & NAV */
+        header { 
+            background-color: var(--white); height: 90px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0 8%; box-shadow: 0 2px 15px rgba(0,0,0,0.05); 
+            position: sticky; top: 0; z-index: 1000; 
+        }
+
+        .logo { color: var(--dark-green); font-weight: 700; font-size: 20px; text-decoration: none; letter-spacing: 1px; }
+        
+        .nav-links { display: flex; align-items: center; gap: 30px; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 13px; font-weight: 600; text-transform: uppercase; transition: 0.3s; }
+        .nav-links a:hover { color: var(--dark-green); }
+        
+        .btn-foglalas-nav { background-color: var(--dark-green); color: white !important; padding: 12px 25px; border-radius: 50px; transition: 0.3s; }
+
+        /* HAMBURGER MENÜ */
+        .hamburger { display: none; cursor: pointer; flex-direction: column; gap: 5px; border: none; background: none; padding: 10px; }
+        .hamburger span { width: 30px; height: 3px; background-color: var(--dark-green); border-radius: 2px; transition: 0.3s; }
+
+        /* OLDAL FEJLÉC */
+        .page-header { 
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('hero.jpg'); 
+            background-size: cover; background-position: center; 
+            height: 35vh; display: flex; justify-content: center; align-items: center; 
+            color: white; text-align: center; 
+        }
+        .page-header h1 { color: white; font-size: clamp(28px, 4vw, 42px); }
+
+        /* TARTALOM */
+        .container { max-width: 1100px; margin: 0 auto; padding: 80px 5%; }
+        
+        .instructor-row { 
+            display: flex; flex-wrap: wrap; align-items: center; gap: 60px; margin-bottom: 100px;
+        }
+        .instructor-image { 
+            flex: 1; min-width: 300px; border-radius: 30px; overflow: hidden; 
+            box-shadow: 20px 20px 0 var(--white);
+        }
+        .instructor-image img { width: 100%; display: block; }
+        .instructor-text { flex: 1.5; min-width: 300px; }
+
+        /* LOVAK RÁCS */
+        .horse-section-title { text-align: center; margin-bottom: 50px; }
+        .horse-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 40px; }
+        .horse-card { 
+            background: white; border-radius: 25px; overflow: hidden; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); transition: 0.3s;
+        }
+        .horse-card:hover { transform: translateY(-5px); }
+        .horse-img { height: 280px; overflow: hidden; }
+        .horse-img img { width: 100%; height: 100%; object-fit: cover; }
+        .horse-info { padding: 30px; }
+        .horse-info h3 { color: var(--accent-gold); margin-bottom: 10px; }
+
+        footer { background: #1a1a1a; color: #999; padding: 60px 8% 30px; text-align: center; }
+
+        /* STICKY FOGLALÁS GOMB - Desktopon rejtve[cite: 11] */
+        .sticky-booking-btn {
+            display: none; 
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--dark-green);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 14px;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            z-index: 2000;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .horse-icon { font-size: 24px; line-height: 1; }
+
+        /* MOBIL NÉZET ÉS STICKY GOMB MEGJELENÍTÉSE */
+        @media (max-width: 950px) {
+            .hamburger { display: flex; }
+            .nav-links { 
+                display: none; position: absolute; top: 90px; left: 0; width: 100%; 
+                background: white; flex-direction: column; padding: 30px 0; 
+                box-shadow: 0 10px 15px rgba(0,0,0,0.1); 
+            }
+            .nav-links.active { display: flex; }
+            header { padding: 0 5%; }
+            .instructor-row { gap: 30px; }
+        }
+
+        @media (max-width: 600px) {
+            .sticky-booking-btn {
+                display: flex; /* Mobilon megjelenik[cite: 11] */
+                bottom: 20px;
+                right: 20px;
+                padding: 10px 20px;
+                font-size: 12px;
+            }
+            .horse-icon { font-size: 20px; }
+        }
+
+        @keyframes horseJump {
+            from { transform: translateY(0); }
+            to { transform: translateY(-3px); }
+        }
+        .sticky-booking-btn:hover .horse-icon { animation: horseJump 0.5s infinite alternate; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">JÁZMIN LOVASUDVAR</a>
+    <button class="hamburger" onclick="toggleMenu()" aria-label="Menü">
+        <span></span><span></span><span></span>
+    </button>
+    <nav class="nav-links" id="navLinks">
+        <a href="index.html">Főoldal</a>
+        <a href="rolunk.html">Rólunk</a>
+        <a href="biztonsag.html">Biztonság</a>
+        <a href="kapcsolat.html">Kapcsolat</a>
+        <a href="foglalas.html" class="btn-foglalas-nav">FOGLALÁS</a>
+    </nav>
+</header>
+
+<section class="page-header">
+    <h1>Akik a biztonságért és az élményért felelnek</h1>
+</section>
+
+<main class="container">
+    <!-- ANIKÓ BEMUTATKOZÁSA -->
+    <div class="instructor-row">
+        <div class="instructor-image">
+            <img src="vezett_tura.jpg" alt="Szűcs Anikó lovas oktató">
+        </div>
+        <div class="instructor-text">
+            <h2>Szakértelem és szeretet</h2>
+            <p><strong>Szűcs Anikó vagyok, több mint 10 éves tapasztalattal várom a legkisebb lovasokat.</strong> A Jázmin Lovasudvart azért hoztam létre, hogy a gyerekek ne egy rideg sportközpontban, hanem barátságos, családi környezetben ismerhessék meg ezeket a csodálatos állatokat.</p>
+            <p>Nálunk Jázmin és Mary Lou nem csak lovak, hanem igazi családtagok. Ez a nyugalom és türelem teszi lehetővé, hogy a gyerekek szorongás nélkül, tiszta örömmel üljenek nyeregbe.</p>
+        </div>
+    </div>
+
+    <!-- LOVAK BEMUTATÁSA -->
+    <div class="horse-section-title">
+        <h2>Négylábú munkatársaink</h2>
+        <p>Ismerkedjen meg udvarunk békés és barátságos lakóival</p>
+    </div>
+
+    <div class="horse-grid">
+        <!-- JÁZMIN -->
+        <div class="horse-card">
+            <div class="horse-img">
+                <img src="jazmin_lo.jpg" alt="Jázmin, a ló">
+            </div>
+            <div class="horse-info">
+                <h3>Jázmin</h3>
+                <p>Udvarunk névadója, egy végtelenül nyugodt és türelmes kanca. Kifejezetten a legkisebbek nagy kedvence, aki imádja a kényeztetést és a lassú sétákat.</p>
+            </div>
+        </div>
+
+        <!-- MARY LOU -->
+        <div class="horse-card">
+            <div class="horse-img">
+                <img src="marylu_lo.jpg" alt="Mary Lou, a ló">
+            </div>
+            <div class="horse-info">
+                <h3>Mary Lou</h3>
+                <p>Igazi egyéniség, aki minden gyereket levesz a lábáról. Megbízható társa az oktatásnak, legyen szó az első barátkozásról vagy futószáras lovaglásról.</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p><strong>JÁZMIN LOVASUDVAR</strong> | Gyöngyös | +36 20 500 9664</p>
+    <p>© 2026 Minden jog fenntartva.</p>
+</footer>
+
+<script>
+    function toggleMenu() {
+        document.getElementById("navLinks").classList.toggle("active");
+    }
+</script>
+
+<!-- Lebegő Foglalás Gomb - Csak mobilon látható[cite: 11] -->
+<a href="foglalas.html" class="sticky-booking-btn">
+    <span class="horse-icon">🐴</span>
+    <span class="btn-text">FOGLALÁS MOST</span>
+</a>
+
+</body>
+</html>

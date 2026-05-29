@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tudástár kezelése – Jázmin Lovasudvar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root { --dark-green: #2e7d32; --dark-green-hover: #1b5e20; --bg-cream: #faf8f5; --white: #fff; --border: #e0e0e0; --red: #c0392b; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-cream); color: #2c3e50; }
+        header { background: #1a1a1a; padding: 0 5%; height: 70px; display: flex; align-items: center; justify-content: space-between; }
+        header h1 { color: white; font-family: 'Montserrat', sans-serif; font-size: 18px; }
+        .header-links { display: flex; gap: 20px; align-items: center; }
+        .header-links a { color: #aaa; text-decoration: none; font-size: 13px; }
+        .header-links a:hover { color: white; }
+        .btn-switch { background: #2e7d32; color: white !important; padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+        .container { max-width: 900px; margin: 40px auto; padding: 0 5% 80px; }
+        .form-card { background: white; border-radius: 20px; padding: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.07); margin-bottom: 40px; }
+        .form-card h2 { font-family: 'Montserrat', sans-serif; color: var(--dark-green); margin-bottom: 25px; font-size: 20px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; font-weight: 600; font-size: 13px; color: #555; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 13px 15px; border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 15px; color: #2c3e50; background: #fdfdfd; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--dark-green); }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .image-upload-area { border: 2px dashed var(--border); border-radius: 12px; padding: 25px; text-align: center; cursor: pointer; transition: border-color 0.2s; position: relative; }
+        .image-upload-area:hover { border-color: var(--dark-green); }
+        .image-upload-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .upload-icon { font-size: 32px; margin-bottom: 8px; }
+        .upload-text { font-size: 14px; color: #888; }
+        .upload-text strong { color: var(--dark-green); }
+        .images-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; margin-top: 15px; }
+        .img-thumb { position: relative; border-radius: 10px; overflow: hidden; aspect-ratio: 1; background: #f0f0f0; }
+        .img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .cover-badge { position: absolute; top: 5px; left: 5px; background: var(--dark-green); color: white; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+        .remove-btn { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+        .remove-btn:hover { background: var(--red); }
+        .img-uploading { display: flex; align-items: center; justify-content: center; background: #f9f9f9; border-radius: 10px; aspect-ratio: 1; }
+        .mini-spinner { width: 24px; height: 24px; border: 3px solid #eee; border-top-color: var(--dark-green); border-radius: 50%; animation: spin 0.7s linear infinite; }
+        .btn-row { display: flex; gap: 12px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-green { background: var(--dark-green); color: white; border: none; padding: 14px 30px; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px; transition: background 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-green:hover { background: var(--dark-green-hover); }
+        .btn-green:disabled { background: #aaa; cursor: not-allowed; }
+        .btn-grey { background: #eee; color: #555; border: none; padding: 14px 25px; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; }
+        .btn-grey:hover { background: #ddd; }
+        .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .list-header h2 { font-family: 'Montserrat', sans-serif; color: var(--dark-green); font-size: 20px; }
+        .count-badge { background: var(--dark-green); color: white; border-radius: 20px; padding: 4px 12px; font-size: 13px; font-weight: 600; }
+        .news-item { background: white; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); overflow: hidden; margin-bottom: 20px; display: flex; }
+        .news-img-thumb { width: 130px; min-width: 130px; background: #f0f0f0; overflow: hidden; position: relative; }
+        .news-img-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .news-img-thumb .no-img { height: 100%; min-height: 100px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #ccc; }
+        .img-count { position: absolute; bottom: 6px; right: 6px; background: rgba(0,0,0,0.6); color: white; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 10px; }
+        .news-body { padding: 20px; flex: 1; }
+        .news-date { font-size: 12px; color: #aaa; margin-bottom: 6px; }
+        .news-title { font-weight: 700; font-size: 16px; color: #2c3e50; margin-bottom: 8px; }
+        .news-content { font-size: 14px; color: #666; line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .news-actions { display: flex; gap: 8px; margin-top: 14px; }
+        .btn-edit { background: #fff3e0; color: #e65100; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-edit:hover { background: #ffe0b2; }
+        .btn-delete { background: #fde8e8; color: var(--red); border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-delete:hover { background: #fcc; }
+        .empty-state { text-align: center; padding: 50px; color: #aaa; font-size: 15px; }
+        .loading { text-align: center; padding: 40px; color: #aaa; }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: white; padding: 14px 28px; border-radius: 50px; font-weight: 600; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 9999; display: none; }
+        @media (max-width: 600px) { .news-img-thumb { width: 90px; min-width: 90px; } .btn-row { flex-direction: column; } }
+        
+        /* KATEGÓRIA KEZELŐ */
+        .category-manager { background: #f9f9f9; border-radius: 12px; padding: 20px; margin-bottom: 30px; }
+        .category-manager h3 { font-size: 16px; margin-bottom: 15px; color: var(--dark-green); }
+        .cat-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .cat-tag { background: white; border: 2px solid var(--border); padding: 6px 12px; border-radius: 20px; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; }
+        .cat-tag.default { border-color: var(--dark-green); color: var(--dark-green); }
+        .cat-tag button { background: none; border: none; color: var(--red); cursor: pointer; font-size: 16px; padding: 0; width: 18px; height: 18px; line-height: 1; }
+        .cat-tag button:hover { color: #e74c3c; }
+        .add-cat-row { display: flex; gap: 8px; align-items: center; }
+        .add-cat-row input { flex: 1; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 14px; }
+        .btn-add-cat { background: var(--dark-green); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-add-cat:hover { background: var(--dark-green-hover); }
+    
+        .nav-btn:hover { background: rgba(255,255,255,0.15) !important; }
+
+        /* JÁRMÓDOK EDITOR STYLES */
+        .tinymce-container { margin: 20px 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .status-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-left: auto; }
+        .status-badge.draft { background: #fde8e8; color: var(--red); }
+        .status-badge.published { background: #e8f5e9; color: #2e7d32; }
+        
+        .btn-preview { background: #3498db; color: white; border: none; padding: 14px 30px; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px; transition: background 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-preview:hover { background: #2980b9; }
+        .btn-publish { background: #2ecc71; color: white; border: none; padding: 14px 30px; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px; transition: background 0.2s; display: flex; align-items: center; gap: 8px; }
+        .btn-publish:hover { background: #27ae60; }
+        .btn-draft-btn { background: #f39c12; color: white; border: none; padding: 14px 30px; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 700; font-size: 15px; transition: background 0.2s; }
+        .btn-draft-btn:hover { background: #e67e22; }
+
+        .preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 5000; overflow-y: auto; }
+        .preview-modal.active { display: flex; align-items: center; justify-content: center; }
+        .preview-content { background: white; width: 90%; max-width: 1000px; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+        .preview-header { background: #2d5016; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .preview-header h3 { color: white; margin: 0; }
+        .close-preview { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .preview-body { padding: 40px; }
+        
+        </style>
+</head>
+<body>
+<header style="background: #2d5016; color: white; padding: 15px 8%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000;">
+        <h1 style="font-size: 20px; margin: 0;">📚 Tudástár Admin</h1>
+        <div class="admin-nav" style="display: flex; gap: 10px; align-items: center;">
+            <a href="admin.html" class="nav-btn" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; transition: background 0.2s;">📅 Foglalások</a>
+            <a href="admin-tudastar.html" class="nav-btn active" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; background: rgba(255,255,255,0.2); font-size: 14px; font-weight: 600;">📚 Tudástár</a>
+            <a href="admin-bizonylatok.html" class="nav-btn" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; transition: background 0.2s;">📋 Bizonylatok</a>
+            <span style="color: rgba(255,255,255,0.3); margin: 0 5px;">|</span>
+            <a href="index.html" style="color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; transition: background 0.2s;">← Főoldal</a>
+        </div>
+    </header>
+
+<div class="container">
+    
+    <!-- KATEGÓRIA KEZELŐ -->
+    <div class="category-manager">
+        <h3>📂 Kategóriák kezelése</h3>
+        <div class="cat-list" id="categoryList">
+            <div class="cat-tag default">⏳ Betöltés...</div>
+        </div>
+        <div class="add-cat-row">
+            <input type="text" id="newCategoryInput" placeholder="Új kategória neve..." maxlength="50">
+            <button class="btn-add-cat" onclick="addCategory()">+ Hozzáad</button>
+        </div>
+    </div>
+
+    <div class="form-card">
+        <h2 id="formTitle" style="display: flex; align-items: center;">
+            ✏️ Új bejegyzés
+            <span class="status-badge draft" id="statusBadge" style="display:none;">Piszkozat</span>
+        </h2>
+        <input type="hidden" id="editId">
+        <div class="form-group">
+            <label>Cím</label>
+            <input type="text" id="newsTitle" placeholder="Pl. A ló szerszámai – amit tudni érdemes">
+        </div>
+        
+        <div class="form-group">
+            <label>Kategória</label>
+            <select id="newsCategory" style="width: 100%; padding: 13px 15px; border: 1.5px solid var(--border); border-radius: 12px; font-family: 'Poppins', sans-serif; font-size: 15px; color: #2c3e50; background: #fdfdfd;">
+                <!-- Dinamikusan töltödik -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Szöveg (Word-szerű szövegszerkesztő)</label>
+            
+            <!-- Editor Toolbar -->
+            <div id="editorToolbar" style="background: #f5f5f5; border: 1px solid var(--border); border-bottom: none; border-radius: 12px 12px 0 0; padding: 12px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                <!-- Formatting buttons -->
+                <button type="button" onclick="formatDoc('bold')" title="Félkövér (Ctrl+B)" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; font-weight: bold;">B</button>
+                <button type="button" onclick="formatDoc('italic')" title="Dőlt (Ctrl+I)" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; font-style: italic;">I</button>
+                <button type="button" onclick="formatDoc('underline')" title="Aláhúzott (Ctrl+U)" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; text-decoration: underline;">U</button>
+                
+                <div style="width: 1px; height: 20px; background: #ddd;"></div>
+                
+                <!-- Font size -->
+                <select onchange="formatDoc('fontSize', this.value)" style="padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer;">
+                    <option value="">Méret</option>
+                    <option value="1">Nagyon kicsi</option>
+                    <option value="2">Kicsi</option>
+                    <option value="3" selected>Normál</option>
+                    <option value="4">Nagy</option>
+                    <option value="5">Nagyobb</option>
+                    <option value="6">Nagyon nagy</option>
+                </select>
+                
+                <!-- Alignment -->
+                <button type="button" onclick="formatDoc('justifyLeft')" title="Balra igazított" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">⬅</button>
+                <button type="button" onclick="formatDoc('justifyCenter')" title="Középre igazított" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">⬆⬇</button>
+                <button type="button" onclick="formatDoc('justifyRight')" title="Jobbra igazított" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">➡</button>
+                
+                <div style="width: 1px; height: 20px; background: #ddd;"></div>
+                
+                <!-- Lists -->
+                <button type="button" onclick="formatDoc('insertUnorderedList')" title="Pontsorozat" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">• Lista</button>
+                <button type="button" onclick="formatDoc('insertOrderedList')" title="Számozás" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">1. Lista</button>
+                
+                <div style="width: 1px; height: 20px; background: #ddd;"></div>
+                
+                <!-- Link -->
+                <button type="button" onclick="insertLink()" title="Link beszúrása" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">🔗 Link</button>
+                
+                <!-- Color -->
+                <input type="color" onchange="formatDoc('foreColor', this.value)" title="Szöveg szín" style="width: 40px; height: 32px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer;">
+                
+                <div style="width: 1px; height: 20px; background: #ddd;"></div>
+                
+                <!-- Clear formatting -->
+                <button type="button" onclick="formatDoc('removeFormat')" title="Formázás törlése" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px; color: #999;">✕ Formázás törlése</button>
+                
+                <!-- Undo/Redo -->
+                <button type="button" onclick="formatDoc('undo')" title="Vissza" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">↶</button>
+                <button type="button" onclick="formatDoc('redo')" title="Előre" style="padding: 6px 10px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 4px;">↷</button>
+            </div>
+            
+            <!-- Editor Content Area -->
+            <div class="tinymce-container" style="min-height: 400px; padding: 20px; background: white; border: 1.5px solid var(--border); border-radius: 0 0 12px 12px; cursor: text; overflow-y: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div id="newsContent" contenteditable="true" style="font-family: 'Poppins', sans-serif; font-size: 15px; color: #2c3e50; line-height: 1.8; outline: none; min-height: 350px;">
+                    Kattints ide a szöveg írásához...
+                </div>
+            </div>
+            <div style="font-size: 12px; color: #999; margin-top: 8px; padding: 8px; background: #f9f9f9; border-radius: 8px;">
+                💡 Word-szerű szövegszerkesztő — teljes formázás, listák, linkek, színek támogatottak
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Képek (több is feltölthető egyszerre)</label>
+            <div class="image-upload-area">
+                <input type="file" id="imageFiles" accept="image/*" multiple onchange="handleImages(this)">
+                <div class="upload-icon">📷</div>
+                <div class="upload-text">Kattints vagy húzz ide képeket<br><strong>Több kép egyszerre is választható</strong></div>
+            </div>
+            <div class="images-grid" id="imagesGrid"></div>
+        </div>
+        <div class="btn-row">
+            <button class="btn-preview" id="previewBtn" onclick="showPreview()" style="display:none;">
+                👁️ Előnézet
+            </button>
+            <button class="btn-publish" id="publishBtn" onclick="publishNews()" style="display:none;">
+                ✅ Közzétesz
+                <div class="spinner" id="publishSpinner"></div>
+            </button>
+            <button class="btn-draft-btn" id="draftBtn" onclick="saveDraft()" style="display:none;">
+                📝 Piszkozatba
+                <div class="spinner" id="draftSpinner"></div>
+            </button>
+            <button class="btn-green" id="submitBtn" onclick="submitNews()">
+                <span id="btnText">💾 Mentés</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+            <button class="btn-grey" id="cancelBtn" onclick="cancelEdit()" style="display:none;">Mégsem</button>
+        </div>
+    </div>
+
+    <div class="list-header">
+        <h2>📋 Bejegyzések</h2>
+        <span class="count-badge" id="countBadge">0</span>
+    </div>
+    <div id="newsList"><div class="loading">⏳ Betöltés...</div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ✅ KÖZPONTI AUTH RENDSZER (session védelem + 15 perc auto-logout + kijelentkezés gomb) -->
+<script src="auth-system.js"></script>
+
+<script>
+// FIGYELEM: a SUPABASE_URL / SUPABASE_ANON_KEY már az auth-system.js-ben deklarálva.
+// Itt NEM deklaráljuk újra (const ütközést okozna).
+const HEADERS = { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY, "Content-Type": "application/json" };
+const BUCKET_URL = SUPABASE_URL + "/storage/v1/object/public/news-images/";
+let currentImages = [];
+
+async function handleImages(input) {
+    const files = Array.from(input.files);
+    for (const file of files) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'img-uploading';
+        placeholder.innerHTML = '<div class="mini-spinner"></div>';
+        document.getElementById('imagesGrid').appendChild(placeholder);
+        try {
+            const url = await uploadImage(file);
+            currentImages.push(url);
+            placeholder.remove();
+            renderThumbs();
+        } catch(e) {
+            placeholder.remove();
+            toast("❌ Feltöltési hiba: " + file.name, '#c0392b');
+        }
+    }
+    input.value = '';
+}
+
+async function uploadImage(file) {
+    const ext = file.name.split('.').pop();
+    const fileName = "news_" + Date.now() + "_" + Math.random().toString(36).substr(2,5) + "." + ext;
+    const resp = await fetch(SUPABASE_URL + "/storage/v1/object/news-images/" + fileName, {
+        method: "POST",
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: "Bearer " + SUPABASE_ANON_KEY, "Content-Type": file.type },
+        body: file
+    });
+    if (!resp.ok) throw new Error("Feltöltési hiba");
+    return BUCKET_URL + fileName;
+}
+
+function renderThumbs() {
+    document.getElementById('imagesGrid').innerHTML = currentImages.map((url, i) => `
+        <div class="img-thumb">
+            <img src="${url}" alt="kep">
+            ${i === 0 ? '<span class="cover-badge">Borító</span>' : ''}
+            <button class="remove-btn" onclick="removeImage(${i})">✕</button>
+        </div>
+    `).join('');
+}
+
+function removeImage(index) {
+    currentImages.splice(index, 1);
+    renderThumbs();
+}
+
+async function submitNews() {
+    const title = document.getElementById('newsTitle').value.trim();
+    const content = document.getElementById('newsContent').value.trim();
+    const editId = document.getElementById('editId').value;
+    if (!title || !content) return toast("⚠️ Cím és szöveg kötelező!", '#e65100');
+    const btn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const spinner = document.getElementById('spinner');
+    btn.disabled = true; btnText.textContent = "Mentés..."; spinner.style.display = 'block';
+    try {
+        const category = document.getElementById('newsCategory').value;
+        const payload = { title, content, category, image_url: currentImages[0] || null, images: currentImages, updated_at: new Date().toISOString() };
+        if (editId) {
+            await fetch(SUPABASE_URL + "/rest/v1/news?id=eq." + editId, { method: "PATCH", headers: HEADERS, body: JSON.stringify(payload) });
+            toast("✅ Bejegyzés frissítve!");
+        } else {
+            await fetch(SUPABASE_URL + "/rest/v1/news", { method: "POST", headers: { ...HEADERS, Prefer: "return=minimal" }, body: JSON.stringify(payload) });
+            toast("✅ Bejegyzés elmentve!");
+        }
+        cancelEdit(); load();
+    } catch(e) {
+        toast("❌ Hiba: " + e.message, '#c0392b');
+    } finally {
+        btn.disabled = false; btnText.textContent = "💾 Mentés"; spinner.style.display = 'none';
+    }
+}
+
+function editNews(id, title, content, images, category) {
+    document.getElementById('editId').value = id;
+    document.getElementById('newsTitle').value = title;
+    setEditorContent(content);
+    document.getElementById('newsCategory').value = category || 'Általános';
+    document.getElementById('formTitle').textContent = "✏️ Bejegyzés szerkesztése";
+    document.getElementById('cancelBtn').style.display = 'block';
+    document.getElementById('submitBtn').style.display = 'block';
+    document.getElementById('previewBtn').style.display = 'flex';
+    document.getElementById('publishBtn').style.display = 'flex';
+    document.getElementById('draftBtn').style.display = 'block';
+    document.getElementById('statusBadge').style.display = 'inline-block';
+    document.getElementById('btnText').textContent = "💾 Módosítás mentése";
+    currentImages = images || [];
+    renderThumbs();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function cancelEdit() {
+    document.getElementById('editId').value = '';
+    document.getElementById('newsTitle').value = '';
+    clearEditor();
+    document.getElementById('newsCategory').value = 'Általános';
+    document.getElementById('formTitle').textContent = '✏️ Új bejegyzés';
+    document.getElementById('cancelBtn').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'block';
+    document.getElementById('previewBtn').style.display = 'none';
+    document.getElementById('publishBtn').style.display = 'none';
+    document.getElementById('draftBtn').style.display = 'none';
+    document.getElementById('statusBadge').style.display = 'none';
+    document.getElementById('btnText').textContent = '💾 Mentés';
+    document.getElementById('imageFiles').value = '';
+    document.getElementById('imagesGrid').innerHTML = '';
+    currentImages = [];
+}
+
+async function deleteNews(id) {
+    if (!confirm("Biztosan törlöd ezt a bejegyzést?")) return;
+    try {
+        await fetch(SUPABASE_URL + "/rest/v1/news?id=eq." + id, { method: "DELETE", headers: HEADERS });
+        toast("🗑 Törölve!"); load();
+    } catch(e) { toast("❌ Törlési hiba!", '#c0392b'); }
+}
+
+// ── KATEGÓRIA KEZELÉS ──
+const defaultCategories = ['Általános', '🎨 Lovak színei', '🏷️ Jegyek', '🛠️ Szerszámok', '🧼 Ápolás', '🐴 Lovas alapok', '🏇 Lovaglás'];
+let customCategories = [];
+
+async function loadCategories() {
+    try {
+        const resp = await fetch(SUPABASE_URL + "/rest/v1/news?select=category", { headers: HEADERS });
+        const data = await resp.json();
+        
+        const allCats = new Set(['Általános']);
+        data.forEach(item => {
+            if (item.category && item.category.trim()) {
+                allCats.add(item.category);
+            }
+        });
+        
+        customCategories = Array.from(allCats);
+        
+        // If only Általános, add suggested defaults
+        if (customCategories.length === 1 && customCategories[0] === 'Általános') {
+            customCategories = ['Általános', '🎨 Lovak színei', '🏷️ Jegyek', '🛠️ Szerszámok', '🧼 Ápolás', '🐴 Lovas alapok', '🏇 Lovaglás'];
+        }
+        
+        renderCategories();
+        updateCategoryDropdown();
+    } catch(e) {
+        console.error('Kategória betöltési hiba:', e);
+        customCategories = ['Általános', '🎨 Lovak színei', '🏷️ Jegyek', '🛠️ Szerszámok', '🧼 Ápolás'];
+        renderCategories();
+        updateCategoryDropdown();
+    }
+}
+
+function renderCategories() {
+    const list = document.getElementById('categoryList');
+    if (!list) return;
+    
+    if (customCategories.length === 0) {
+        customCategories = ['Általános'];
+    }
+    
+    list.innerHTML = '';
+    customCategories.forEach(cat => {
+        const tag = document.createElement('div');
+        tag.className = 'cat-tag' + (cat === 'Általános' ? ' default' : '');
+        tag.textContent = cat;
+        
+        if (cat !== 'Általános') {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '×';
+            deleteBtn.onclick = () => deleteCategory(cat);
+            tag.appendChild(deleteBtn);
+        }
+        
+        list.appendChild(tag);
+    });
+}
+
+function updateCategoryDropdown() {
+    const select = document.getElementById('newsCategory');
+    if (!select) return;
+    const current = select.value;
+    
+    if (customCategories.length === 0) {
+        customCategories = ['Általános'];
+    }
+    
+    select.innerHTML = customCategories.map(cat => 
+        '<option value="' + cat + '">' + cat + '</option>'
+    ).join('');
+    
+    if (customCategories.includes(current)) {
+        select.value = current;
+    } else {
+        select.value = 'Általános';
+    }
+}
+
+function addCategory() {
+    const input = document.getElementById('newCategoryInput');
+    const newCat = input.value.trim();
+    
+    if (!newCat) return toast('⚠️ Írd be a kategória nevét!', '#e65100');
+    if (customCategories.includes(newCat)) return toast('⚠️ Ez a kategória már létezik!', '#e65100');
+    if (newCat.length > 50) return toast('⚠️ Túl hosszú név (max 50 karakter)!', '#e65100');
+    
+    customCategories.push(newCat);
+    renderCategories();
+    updateCategoryDropdown();
+    input.value = '';
+    toast('✅ Kategória hozzáadva: ' + newCat + ' (mentsd el egy bejegyzésben!)');
+}
+
+async function deleteCategory(cat) {
+    if (!confirm('Biztosan törlöd a "' + cat + '" kategóriát?\n\nA bejegyzések "Általános" kategóriába kerülnek.')) return;
+    
+    try {
+        // Update all posts with this category to "Általános"
+        await fetch(SUPABASE_URL + '/rest/v1/news?category=eq.' + encodeURIComponent(cat), {
+            method: 'PATCH',
+            headers: HEADERS,
+            body: JSON.stringify({ category: 'Általános' })
+        });
+        
+        customCategories = customCategories.filter(c => c !== cat);
+        renderCategories();
+        updateCategoryDropdown();
+        load(); // Reload list
+        toast('✅ Kategória törölve');
+    } catch(e) {
+        toast('❌ Törlési hiba!', '#c0392b');
+    }
+}
+
+async function load() {
+    document.getElementById('newsList').innerHTML = '<div class="loading">⏳ Betöltés...</div>';
+    try {
+        const resp = await fetch(SUPABASE_URL + "/rest/v1/news?order=created_at.desc", { headers: HEADERS });
+        const data = await resp.json();
+        document.getElementById('countBadge').textContent = data.length;
+        if (!data.length) { document.getElementById('newsList').innerHTML = '<div class="empty-state">📭 Még nincs bejegyzés. Írj egyet fent!</div>'; return; }
+        document.getElementById('newsList').innerHTML = data.map(item => {
+            const imgs = (item.images && item.images.length) ? item.images : (item.image_url ? [item.image_url] : []);
+            return `<div class="news-item">
+                <div class="news-img-thumb">
+                    ${imgs.length ? `<img src="${imgs[0]}" alt="">${imgs.length > 1 ? '<span class="img-count">📷 ' + imgs.length + '</span>' : ''}` : '<div class="no-img">🐴</div>'}
+                </div>
+                <div class="news-body">
+                    <div class="news-date">${new Date(item.created_at).toLocaleDateString('hu-HU',{year:'numeric',month:'long',day:'numeric'})} • <span style="color:var(--dark-green);font-weight:600;">${item.category || 'Általános'}</span></div>
+                    <div class="news-title">${item.title}</div>
+                    <div class="news-content">${item.content}</div>
+                    <div class="news-actions">
+                        <button class="btn-edit" onclick='editNews("${item.id}","${esc(item.title)}","${esc(item.content)}",${JSON.stringify(imgs)},"${item.category || 'Általános'}")'>✏️ Szerkesztés</button>
+                        <button class="btn-delete" onclick="deleteNews('${item.id}')">🗑 Törlés</button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    } catch(e) { document.getElementById('newsList').innerHTML = '<div class="empty-state">❌ Betöltési hiba</div>'; }
+}
+
+function esc(str) { return (str||'').replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n'); }
+function toast(msg, bg='#2e7d32') {
+    const el = document.getElementById('toast');
+    el.textContent = msg; el.style.background = bg; el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 3000);
+}
+// Initialize – CSAK bejelentkezés után (auth-system.js authReady eseménye)
+window.addEventListener('authReady', async function() {
+    console.log('✅ authReady – tudástár admin betöltése');
+    await loadCategories();
+    load();
+});
+</script>
+
+<!-- PREVIEW MODAL -->
+<div class="preview-modal" id="previewModal">
+    <div class="preview-content" style="width: 95%; max-width: 1200px; border-radius: 0;">
+        <div class="preview-header">
+            <h3>👁️ Előnézet – Az index.html Tudástár szekciójában így fog kinézni</h3>
+            <button class="close-preview" onclick="closePreview()">×</button>
+        </div>
+        <div class="preview-body" id="previewBody" style="padding: 40px 8%; background: #faf8f5; min-height: 500px;">
+            <!-- Content will be inserted here in index.html style -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Simple ContentEditable editor handlers
+function getEditorContent() {
+    const editor = document.getElementById('newsContent');
+    return editor ? editor.innerHTML : '';
+}
+
+function setEditorContent(content) {
+    const editor = document.getElementById('newsContent');
+    if (editor) {
+        editor.innerHTML = content || 'Kattints ide a szöveg írásához...';
+    }
+}
+
+function clearEditor() {
+    setEditorContent('Kattints ide a szöveg írásához...');
+}
+
+// Word-like formatting function
+function formatDoc(command, value = null) {
+    if (value) {
+        document.execCommand(command, false, value);
+    } else {
+        document.execCommand(command, false, null);
+    }
+    document.getElementById('newsContent').focus();
+}
+
+// Insert link function
+function insertLink() {
+    const url = prompt('Link URL-je:');
+    if (url) {
+        document.execCommand('createLink', false, url);
+    }
+    document.getElementById('newsContent').focus();
+}
+
+// Editor placeholder handling
+document.addEventListener('DOMContentLoaded', function() {
+    const editor = document.getElementById('newsContent');
+    if (editor) {
+        editor.addEventListener('focus', function() {
+            if (this.textContent === 'Kattints ide a szöveg írásához...') {
+                this.innerHTML = '';
+            }
+        });
+        editor.addEventListener('blur', function() {
+            if (this.textContent.trim() === '') {
+                this.innerHTML = 'Kattints ide a szöveg írásához...';
+            }
+        });
+    }
+});
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+async function publishNews() {
+    const editId = document.getElementById('editId').value;
+    if (!editId) {
+        toast('⚠️ Nincs kiválasztott bejegyzés!', '#e65100');
+        return;
+    }
+
+    document.getElementById('publishSpinner').style.display = 'inline-block';
+    
+    try {
+        // Mark as published in database
+        await fetch(SUPABASE_URL + '/rest/v1/news?id=eq.' + editId, {
+            method: 'PATCH',
+            headers: HEADERS,
+            body: JSON.stringify({ is_published: true })
+        });
+        
+        document.getElementById('publishSpinner').style.display = 'none';
+        document.getElementById('statusBadge').textContent = '✅ Közzétéve';
+        document.getElementById('statusBadge').className = 'status-badge published';
+        toast('✅ Közzétéve! Az index.html-en most már látható lesz.', '#2e7d32');
+        closePreview();
+    } catch(e) {
+        document.getElementById('publishSpinner').style.display = 'none';
+        toast('❌ Közzététési hiba!', '#c0392b');
+    }
+}
+
+async function saveDraft() {
+    const editId = document.getElementById('editId').value;
+    if (!editId) {
+        toast('⚠️ Nincs kiválasztott bejegyzés!', '#e65100');
+        return;
+    }
+
+    document.getElementById('draftSpinner').style.display = 'inline-block';
+    
+    try {
+        // Mark as draft in database
+        await fetch(SUPABASE_URL + '/rest/v1/news?id=eq.' + editId, {
+            method: 'PATCH',
+            headers: HEADERS,
+            body: JSON.stringify({ is_published: false })
+        });
+        
+        document.getElementById('draftSpinner').style.display = 'none';
+        document.getElementById('statusBadge').textContent = '📝 Piszkozat';
+        document.getElementById('statusBadge').className = 'status-badge draft';
+        toast('📝 Piszkozatba mentve! Az index.html-en nem lesz látható.', '#f39c12');
+    } catch(e) {
+        document.getElementById('draftSpinner').style.display = 'none';
+        toast('❌ Mentési hiba!', '#c0392b');
+    }
+}
+
+// Close modal on escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closePreview();
+    }
+});
+
+// Editor placeholder handling
+document.addEventListener('DOMContentLoaded', function() {
+    const editor = document.getElementById('newsContent');
+    if (editor) {
+        editor.addEventListener('focus', function() {
+            if (this.textContent === 'Kattints ide a szöveg írásához...') {
+                this.innerHTML = '';
+            }
+        });
+        editor.addEventListener('blur', function() {
+            if (this.textContent.trim() === '') {
+                this.innerHTML = 'Kattints ide a szöveg írásához...';
+            }
+        });
+    }
+});
+
+// Preview functions
+function showPreview() {
+    const title = document.getElementById('newsTitle').value;
+    const category = document.getElementById('newsCategory').value;
+    const content = getEditorContent();
+    
+    if (!title.trim() || !content.trim() || content === 'Kattints ide a szöveg írásához...') {
+        toast('⚠️ Írd be a címet és a tartalmat!', '#e65100');
+        return;
+    }
+
+    const previewBody = document.getElementById('previewBody');
+    
+    // Format like index.html news card
+    previewBody.innerHTML = `
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h2 style="font-family: 'Montserrat', sans-serif; color: #2d5016; font-size: 38px; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.5px;">Tudástár 📚</h2>
+            <p style="font-size: 16px; color: #666; margin-bottom: 30px;">Ismerd meg a lovakat, a szerszámokat és a lovaglás alapjait</p>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 32px; max-width: 1080px; margin: 0 auto;">
+            <!-- News Card -->
+            <div style="background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(46, 125, 50, 0.1); overflow: hidden; display: flex; transition: box-shadow 0.3s;">
+                
+                <!-- Card Image Area -->
+                <div style="width: 300px; min-width: 300px; background: linear-gradient(135deg, #f5e6d3 0%, #e8d4b8 100%); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                    <div style="font-size: 80px; text-align: center;">📚</div>
+                </div>
+                
+                <!-- Card Body -->
+                <div style="padding: 34px 38px; flex: 1; display: flex; flex-direction: column;">
+                    <div style="font-size: 13px; color: #999; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                        📅 ${new Date().toLocaleDateString('hu-HU', {year:'numeric', month:'long', day:'numeric'})} • 
+                        <span style="color: #2d5016; font-weight: 700;">${category || 'Általános'}</span>
+                    </div>
+                    <h3 style="font-family: 'Montserrat', sans-serif; font-size: 22px; font-weight: 700; color: #2c3e50; margin: 12px 0; letter-spacing: -0.3px;">
+                        ${escapeHtml(title)}
+                    </h3>
+                    <div style="font-size: 15px; color: #666; line-height: 1.8; flex-grow: 1; margin-bottom: 20px;">
+                        ${content}
+                    </div>
+                    <div style="display: flex; gap: 12px; margin-top: 16px;">
+                        <button style="background: #2e7d32; color: white; border: none; padding: 12px 28px; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; transition: background 0.3s;">
+                            📖 Teljes cikk
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: #e8f5e9; border-radius: 12px; border-left: 4px solid #2d5016;">
+            <p style="color: #333; font-size: 14px;">✅ Ez az előnézet — az index.html Tudástár szekciójában pontosan így fog megjelenni</p>
+        </div>
+    `;
+
+    document.getElementById('previewModal').classList.add('active');
+}
+
+function closePreview() {
+    document.getElementById('previewModal').classList.remove('active');
+}
+</script>

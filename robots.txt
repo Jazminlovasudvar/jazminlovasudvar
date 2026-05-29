@@ -1,0 +1,19 @@
+# robots.txt - Jázmin Lovasudvar
+# Admin oldalak tiltása a search enginesek előtt
+
+User-agent: *
+Allow: /
+
+# Admin oldalak SZIGORÚAN tiltva
+Disallow: /admin-login.html
+Disallow: /admin.html
+Disallow: /admin2.html
+Disallow: /admin-bizonylatok.html
+Disallow: /admin*.html
+Disallow: /admin*/
+
+# Sitemap
+Sitemap: https://jazminlovasudvar.hu/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1

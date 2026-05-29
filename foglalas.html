@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Foglalás – Jázmin Lovasudvar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐴</text></svg>">
+    
+    <style>
+        :root {
+            --dark-green: #2e7d32;
+            --dark-green-hover: #1b5e20;
+            --accent-gold: #b08d57;
+            --bg-cream: #faf8f5;
+            --white: #ffffff;
+            --text-dark: #2c3e50;
+            --muted: #7f8c8d;
+            --border: #e0e0e0;
+            --green-light: #e8f5e9;
+            --red: #c0392b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-cream); color: var(--text-dark); line-height: 1.8; }
+
+        /* HEADER */
+        header { background: var(--white); height: 90px; display: flex; justify-content: space-between; align-items: center; padding: 0 8%; box-shadow: 0 2px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
+        .logo { color: var(--dark-green); font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; text-decoration: none; text-transform: uppercase; }
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a { text-decoration: none; color: #555; font-size: 13px; font-weight: 600; margin-left: 20px; text-transform: uppercase; transition: color 0.3s; }
+        .nav-links a:hover { color: var(--dark-green); }
+        .btn-foglalas-nav { background: var(--dark-green); color: white !important; padding: 12px 25px; border-radius: 50px; }
+        .btn-foglalas-nav:hover { background: var(--dark-green-hover) !important; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; background: none; border: none; }
+        .hamburger span { display: block; width: 24px; height: 2px; background: var(--text-dark); border-radius: 2px; }
+
+        /* PAGE HEADER */
+        .page-header { background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('hero.jpg'); background-size: cover; background-position: center; height: 30vh; min-height: 200px; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; }
+        .page-header h1 { font-family: 'Montserrat', sans-serif; font-size: 36px; font-weight: 700; margin-bottom: 8px; }
+        .page-header p { font-size: 15px; opacity: 0.9; }
+
+        /* LAYOUT */
+        .container { max-width: 900px; margin: -50px auto 60px; padding: 0 5%; position: relative; z-index: 10; }
+        .booking-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+
+        /* PROGRESS */
+        .steps { display: flex; gap: 8px; margin-bottom: 32px; }
+        .step { flex: 1; height: 4px; border-radius: 4px; background: var(--border); transition: background 0.3s; }
+        .step.done { background: var(--dark-green); }
+        .step.active { background: var(--dark-green); opacity: 0.4; }
+
+        /* SERVICE CARDS */
+        .section-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+        .services { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 28px; }
+        .service-card { border: 2px solid var(--border); border-radius: 16px; padding: 18px; cursor: pointer; transition: border-color 0.2s, background 0.2s; position: relative; }
+        .service-card:hover { border-color: var(--dark-green); }
+        .service-card.selected { border-color: var(--dark-green); background: var(--green-light); }
+        .service-card .icon { font-size: 28px; margin-bottom: 10px; }
+        .service-card .sc-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+        .service-card .sc-desc { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
+        .service-card .sc-meta { display: flex; justify-content: space-between; font-size: 13px; }
+        .service-card .sc-price { font-weight: 700; color: var(--dark-green); }
+        .service-card .sc-dur { color: var(--muted); }
+        .sc-check { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; background: var(--dark-green); border-radius: 50%; display: none; align-items: center; justify-content: center; }
+        .service-card.selected .sc-check { display: flex; }
+        .sc-check svg { width: 12px; height: 12px; stroke: white; fill: none; stroke-width: 2.5; }
+
+        /* FORM */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--dark-green); font-size: 14px; }
+        .form-group label .req { color: var(--red); margin-left: 2px; }
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px;
+            font-family: 'Poppins', sans-serif; font-size: 15px; color: var(--text-dark); background: #fdfdfd; transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group textarea:focus { outline: none; border-color: var(--dark-green); }
+        .form-group input.err-field { border-color: var(--red); }
+        .err-msg { font-size: 12px; color: var(--red); margin-top: 5px; display: none; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* TIME SLOTS */
+        .time-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; margin-top: 10px; }
+        .time-slot { padding: 12px 6px; border: 1.5px solid var(--border); border-radius: 10px; text-align: center; cursor: pointer; font-size: 14px; font-weight: 600; color: #555; transition: all 0.15s; user-select: none; }
+        .time-slot:hover:not(.reserved) { border-color: var(--dark-green); color: var(--dark-green); background: var(--green-light); }
+        .time-slot.selected { background: var(--dark-green); color: white; border-color: var(--dark-green); }
+        .time-slot.reserved { background: #f5f5f5; color: #ccc; cursor: not-allowed; text-decoration: line-through; border-color: #eee; font-weight: 400; }
+
+        /* SAJÁT NAPTÁR */
+        .cal-wrap { border: 1.5px solid var(--border); border-radius: 14px; padding: 16px; max-width: 360px; background: #fff; }
+        .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .cal-title { font-weight: 700; font-size: 16px; color: var(--dark-green); font-family: 'Montserrat', sans-serif; }
+        .cal-nav { width: 36px; height: 36px; border: 1.5px solid var(--border); background: #fff; border-radius: 9px; font-size: 20px; color: var(--dark-green); cursor: pointer; line-height: 1; transition: all 0.15s; }
+        .cal-nav:hover:not(:disabled) { background: var(--green-light); border-color: var(--dark-green); }
+        .cal-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+        .cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+        .cal-weekdays span { text-align: center; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+        .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 9px; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; transition: all 0.12s; user-select: none; }
+        /* Foglalható nap */
+        .cal-day.available { background: var(--green-light); color: var(--dark-green); }
+        .cal-day.available:hover { background: var(--dark-green); color: #fff; }
+        /* Tiltott nap (múlt, 48 órán belül) – halvány, nem kattintható */
+        .cal-day.disabled { color: #ccc; cursor: not-allowed; background: #fafafa; }
+        /* Üres cella (a hónap előtti/utáni napok helye) */
+        .cal-day.empty { cursor: default; }
+        /* Kiválasztott nap */
+        .cal-day.selected { background: var(--dark-green); color: #fff; border-color: var(--dark-green-hover); }
+        .cal-hint { font-size: 11px; color: var(--muted); margin-top: 10px; text-align: center; line-height: 1.4; }
+
+        /* ALERTS */
+        #closedMessage { display: none; background: #fff5f5; border: 2px dashed #d32f2f; padding: 20px; border-radius: 15px; text-align: center; color: #d32f2f; margin: 10px 0; }
+        #slotsLoading { display: none; color: var(--muted); font-size: 14px; padding: 10px 0; }
+
+        /* SUMMARY */
+        .summary { background: var(--green-light); border-radius: 14px; padding: 18px 20px; margin-bottom: 24px; display: none; }
+        .summary-title { font-weight: 700; font-size: 14px; color: var(--dark-green-hover); margin-bottom: 10px; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 5px; }
+        .summary-row .sl { color: var(--muted); }
+        .summary-row .sv { font-weight: 600; }
+
+        /* SUBMIT BTN */
+        .btn-submit { background: var(--dark-green); color: white; border: none; padding: 20px; border-radius: 50px; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 700; width: 100%; font-size: 16px; text-transform: uppercase; transition: background 0.3s, transform 0.1s; margin-top: 20px; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: 0.5px; }
+        .btn-submit:hover { background: var(--dark-green-hover); }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { background: #aaa; cursor: not-allowed; transform: none; }
+        .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* SUCCESS */
+        #successScreen { display: none; text-align: center; padding: 30px 0; }
+        .success-icon { width: 76px; height: 76px; background: var(--green-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+        .success-icon svg { width: 38px; height: 38px; stroke: var(--dark-green); fill: none; stroke-width: 2.5; }
+        #successScreen h2 { font-family: 'Montserrat', sans-serif; font-size: 24px; margin-bottom: 10px; color: var(--dark-green); }
+        #successScreen p { color: var(--muted); font-size: 14px; margin-bottom: 24px; line-height: 1.8; }
+        .btn-back { display: inline-block; padding: 14px 32px; background: var(--dark-green); color: white; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 14px; text-transform: uppercase; transition: background 0.3s; }
+        .btn-back:hover { background: var(--dark-green-hover); }
+
+        /* FAQ */
+        .faq-section { margin-top: 60px; }
+        .faq-section h2 { text-align: center; color: var(--dark-green); margin-bottom: 30px; font-family: 'Montserrat', sans-serif; font-size: 24px; }
+        .faq-item { background: white; margin-bottom: 10px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .faq-question { width: 100%; padding: 20px; text-align: left; background: none; border: none; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 600; font-size: 14px; color: var(--dark-green); display: flex; justify-content: space-between; align-items: center; transition: background 0.2s; }
+        .faq-question:hover { background: var(--green-light); }
+        .faq-question .arrow { font-size: 20px; transition: transform 0.3s; line-height: 1; }
+        .faq-item.active .faq-question .arrow { transform: rotate(45deg); }
+        .faq-answer { padding: 0 20px; max-height: 0; overflow: hidden; transition: max-height 0.35s ease-out, padding 0.2s; font-size: 14px; color: #666; line-height: 1.8; }
+        .faq-item.active .faq-answer { padding-bottom: 20px; max-height: 300px; }
+
+        /* MAP */
+        .map-section { margin-top: 60px; text-align: center; }
+        .map-section h2 { color: var(--dark-green); font-family: 'Montserrat', sans-serif; font-size: 24px; margin-bottom: 10px; }
+        .map-section > p { color: var(--muted); margin-bottom: 20px; font-size: 14px; }
+        .map-container { border-radius: 20px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 20px; height: 400px; }
+        .map-container iframe { width: 100%; height: 100%; border: 0; display: block; }
+        .map-btns { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .btn-map { padding: 12px 25px; border-radius: 50px; text-decoration: none; color: white; font-weight: 600; font-size: 14px; transition: opacity 0.3s; }
+        .btn-map:hover { opacity: 0.85; }
+        .btn-gmaps { background: #4285F4; }
+        .btn-waze { background: #33CCFF; }
+
+        /* FOOTER */
+        footer { background: #1a1a1a; color: #999; padding: 40px 8%; text-align: center; margin-top: 60px; font-size: 14px; }
+        footer strong { color: #ddd; }
+        .admin-link { color: #333; text-decoration: none; font-size: 11px; margin-top: 15px; display: inline-block; transition: color 0.2s; }
+        .admin-link:hover { color: #666; }
+
+        /* STICKY CTA */
+        .sticky-cta { display: none; position: fixed; bottom: 0; left: 0; right: 0; padding: 14px 20px; background: white; box-shadow: 0 -4px 20px rgba(0,0,0,0.12); z-index: 999; }
+        .sticky-cta .btn-submit { margin: 0; }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .nav-links { display: none; flex-direction: column; position: absolute; top: 90px; left: 0; right: 0; background: white; padding: 20px 8%; box-shadow: 0 10px 20px rgba(0,0,0,0.08); gap: 5px; }
+            .nav-links.open { display: flex; }
+            .nav-links a { margin-left: 0; font-size: 15px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+            .btn-foglalas-nav { text-align: center; margin-top: 8px; border-bottom: none !important; }
+            .hamburger { display: flex; }
+            .page-header h1 { font-size: 26px; }
+            .booking-card { padding: 24px 18px; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .services { grid-template-columns: 1fr; }
+            .container { margin-top: -30px; }
+            .sticky-cta { display: block; }
+            .btn-submit.main-btn { display: none; }
+            body { padding-bottom: 80px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">JÁZMIN LOVASUDVAR</a>
+    <nav class="nav-links" id="navLinks">
+        <a href="index.html">Főoldal</a>
+        <a href="rolunk.html">Rólunk</a>
+        <a href="biztonsag.html">Biztonság</a>
+        <a href="kapcsolat.html">Kapcsolat</a>
+        <a href="foglalas.html" class="btn-foglalas-nav">FOGLALÁS</a>
+    </nav>
+    <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menü">
+        <span></span><span></span><span></span>
+    </button>
+</header>
+
+<section class="page-header">
+    <h1>Időpontfoglalás</h1>
+    <p>Válaszd ki a neked megfelelő szolgáltatást és időpontot!</p>
+</section>
+
+<main class="container">
+    <div class="booking-card">
+
+        <div class="steps">
+            <div class="step" id="st1"></div>
+            <div class="step" id="st2"></div>
+            <div class="step" id="st3"></div>
+        </div>
+
+        <!-- SUCCESS -->
+        <div id="successScreen">
+            <div class="success-icon">
+                <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <h2>Foglalás rögzítve! 🐴</h2>
+            <p id="successMsg">Hamarosan kapsz egy visszaigazoló e-mailt.</p>
+            <a href="index.html" class="btn-back">Vissza a főoldalra</a>
+        </div>
+
+        <!-- FORM -->
+        <div id="formInner">
+
+            <div class="section-label">1. Válaszd ki a szolgáltatást</div>
+            <div class="services">
+                <div class="service-card" data-service="25 perc Póni ismerkedő" data-dur="40" data-price="4000" onclick="selectService(this)">
+                    <div class="icon">🐴</div>
+                    <div class="sc-name">Póni ismerkedő</div>
+                    <div class="sc-desc">3–6 éveseknek, játékos ismerkedés és pónisimogatás</div>
+                    <div class="sc-meta"><span class="sc-price">4 000 Ft</span><span class="sc-dur">25 perc</span></div>
+                    <div class="sc-check"><svg viewBox="0 0 12 10"><polyline points="1 5 4 9 11 1"/></svg></div>
+                </div>
+                <div class="service-card" data-service="30 perc Futószáras oktatás" data-dur="45" data-price="5000" onclick="selectService(this)">
+                    <div class="icon">🎠</div>
+                    <div class="sc-name">Futószáras oktatás</div>
+                    <div class="sc-desc">Egyéni foglalkozás, egyensúly és irányítás alapjai</div>
+                    <div class="sc-meta"><span class="sc-price">5 000 Ft</span><span class="sc-dur">30 perc</span></div>
+                    <div class="sc-check"><svg viewBox="0 0 12 10"><polyline points="1 5 4 9 11 1"/></svg></div>
+                </div>
+                <div class="service-card" data-service="60 perc Vezetett túra" data-dur="75" data-price="12000" onclick="selectService(this)">
+                    <div class="icon">🌿</div>
+                    <div class="sc-name">Vezetett túra</div>
+                    <div class="sc-desc">Sétalovaglás a Sár-hegy lábánál, természetben</div>
+                    <div class="sc-meta"><span class="sc-price">12 000 Ft</span><span class="sc-dur">60 perc</span></div>
+                    <div class="sc-check"><svg viewBox="0 0 12 10"><polyline points="1 5 4 9 11 1"/></svg></div>
+                </div>
+            </div>
+
+            <div class="section-label">2. Válassz napot</div>
+            <div class="form-group">
+                <!-- Saját naptár (a natív input type=date helyett – iOS-en is egységes) -->
+                <div id="customCalendar" class="cal-wrap">
+                    <div class="cal-header">
+                        <button type="button" class="cal-nav" id="calPrev" aria-label="Előző hónap">‹</button>
+                        <span class="cal-title" id="calTitle"></span>
+                        <button type="button" class="cal-nav" id="calNext" aria-label="Következő hónap">›</button>
+                    </div>
+                    <div class="cal-weekdays">
+                        <span>H</span><span>K</span><span>Sze</span><span>Cs</span><span>P</span><span>Szo</span><span>V</span>
+                    </div>
+                    <div class="cal-grid" id="calGrid"></div>
+                    <div class="cal-hint">Csak a kiemelt napok foglalhatók (min. 48 órával előre).</div>
+                </div>
+                <!-- A választott nap értéke ide kerül (YYYY-MM-DD) – a kód többi része ezt használja -->
+                <input type="hidden" id="bookDate">
+            </div>
+
+            <div class="section-label">3. Szabad időpontok</div>
+            <p id="slotsLoading">⏳ Időpontok keresése...</p>
+            <div id="closedMessage"><strong>EZ A NAP BETELT VAGY ZÁRVA VAN!</strong></div>
+            <div id="timeGrid" class="time-grid"></div>
+            <input type="hidden" id="selectedTime">
+
+            <div style="border-top:1px solid var(--border);margin:28px 0 24px;"></div>
+
+            <div class="section-label">4. Adataid</div>
+            <p style="font-size:13px;color:#666;margin-bottom:15px;">Kérdésed van? Hívj minket: <a href="tel:+36205009664" style="color:var(--dark-green);font-weight:600;">+36 20 500 9664</a></p>
+            <div class="form-group">
+                <label>Teljes név <span class="req">*</span></label>
+                <input type="text" id="custName" placeholder="Vezetéknév és Keresztnév">
+                <div class="err-msg" id="err-name">Kérjük add meg a neved.</div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>E-mail <span class="req">*</span></label>
+                    <input type="email" id="custEmail" placeholder="pelda@email.hu">
+                    <div class="err-msg" id="err-email">Érvényes e-mail cím szükséges.</div>
+                </div>
+                <div class="form-group">
+                    <label>Telefon <span class="req">*</span></label>
+                    <input type="tel" id="custPhone" inputmode="tel"
+                           placeholder="+36 30 123 4567"
+                           autocomplete="tel">
+                    <div class="err-msg" id="err-phone">Kérjük adj meg egy érvényes magyar telefonszámot (pl. +36 30 123 4567 vagy 06 30 123 4567).</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Megjegyzés <span style="font-weight:400;color:var(--muted);">(opcionális)</span></label>
+                <textarea id="custNote" rows="2" placeholder="Pl. gyermek kora, különleges igény..."></textarea>
+            </div>
+            <!-- Szülői nyilatkozat checkbox (18 év alattiakhoz) -->
+            <div class="form-group">
+                <div style="background: #fff9e6; padding: 20px; border-radius: 12px; border-left: 4px solid #f39c12; margin: 20px 0;">
+                    <label style="display: flex; align-items: flex-start; cursor: pointer; font-size: 15px; line-height: 1.6;">
+                        <input type="checkbox" id="parentalConsent" style="margin-right: 12px; margin-top: 3px; width: 18px; height: 18px; cursor: pointer;">
+                        <span>
+                            <strong>Szülői nyilatkozat elfogadása:</strong> Tudomásul veszem, hogy 18 év alatti gyermek esetén 
+                            szülői hozzájárulás szükséges. Az első órára kinyomtatva és kitöltve elhozom a 
+                            <a href="szuloi-nyilatkozat.pdf" target="_blank" style="color: var(--dark-green); text-decoration: underline; font-weight: 700;">
+                                📄 szülői nyilatkozatot (PDF megnyitása)
+                            </a>.
+                            <br>
+                            <span style="font-size: 13px; color: #666; font-style: italic; margin-top: 5px; display: inline-block;">
+                                💡 Egyszer elfogadva, a böngésző megjegyzi következő foglalásokhoz.
+                            </span>
+                        </span>
+                    </label>
+                    <div style="margin-top: 12px; padding-left: 30px;">
+                        <a href="szuloi-nyilatkozat.pdf" download class="btn-download-small" style="display: inline-block; background: var(--dark-green); color: white; padding: 10px 20px; border-radius: 25px; text-decoration: none; font-size: 14px; font-weight: 600;">
+                            📥 Nyilatkozat letöltése
+                        </a>
+                        <span style="font-size: 13px; color: #666; margin-left: 15px;">vagy</span>
+                        <a href="biztonsag.html#szuloi-nyilatkozat" target="_blank" style="color: var(--dark-green); text-decoration: underline; font-size: 14px; margin-left: 10px;">
+                            📖 Részletek olvasása
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- GDPR hozzájárulás -->
+            <div class="form-group" style="margin-top:10px;">
+                <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-weight:400;color:#555;">
+                    <input type="checkbox" id="gdprCheck" style="width:18px;height:18px;min-width:18px;margin-top:3px;accent-color:var(--dark-green);">
+                    <span style="font-size:13px;line-height:1.6;">
+                        Elolvastam és elfogadom az 
+                        <a href="adatkezeles.html" target="_blank" style="color:var(--dark-green);font-weight:600;">Adatkezelési tájékoztatót</a>. 
+                        Hozzájárulok személyes adataim (név, e-mail, telefon) kezeléséhez az időpontfoglalás céljából.
+                        <span style="color:var(--red);margin-left:2px;">*</span>
+                    </label>
+                <div class="err-msg" id="err-gdpr" style="display:none;margin-left:28px;margin-top:5px;">Kérjük fogadd el az adatkezelési tájékoztatót.</div>
+                </div>
+
+                <button class="btn-submit main-btn" id="submitBtn" onclick="submitBooking()">
+                <span id="btnText">FOGLALÁS MEGERŐSÍTÉSE</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+
+        </div>
+    </div>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+        <h2>Gyakori Kérdések</h2>
+        <div class="faq-item">
+            <button class="faq-question">Milyen ruházatban érkezzünk? <span class="arrow">+</span></button>
+            <div class="faq-answer">Hosszú, kényelmes nadrág (pl. leggings vagy mackónadrág) és zárt cipő javasolt a kényelem és a biztonság érdekében.</div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">Biztosítanak védőfelszerelést? <span class="arrow">+</span></button>
+            <div class="faq-answer">Kérjük, hogy amíg nem biztos abban, hogy folyamatosan szeretne lovagolni, hozzon magával saját kerékpáros vagy egyéb védősisakot. Amennyiben a rendszeres lovaglás mellett dönt, a későbbiekben érdemes egy saját lovas kobak beszerzése, valamint gerincvédő használata is kifejezetten ajánlott.</div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">Rossz idő esetén elmarad az óra? <span class="arrow">+</span></button>
+            <div class="faq-answer">Igen, heves esőzés, vihar vagy lovaglásra alkalmatlan talajviszonyok esetén az órát elhalasztjuk. Erről e-mailben vagy telefonon értesítjük a vendégeket.</div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">Hogyan tudom lemondani a foglalást? <span class="arrow">+</span></button>
+            <div class="faq-answer">Kérjük, ha mégsem tudsz eljönni, legalább 24 órával korábban jelezd felénk telefonon, hogy másnak átadhassuk az időpontot.</div>
+        </div>
+        <div class="faq-item">
+            <button class="faq-question">Milyen fizetési lehetőségek vannak? <span class="arrow">+</span></button>
+            <div class="faq-answer">A helyszínen készpénzzel vagy azonnali banki átutalással van lehetőség kiegyenlíteni a szolgáltatás díját.</div>
+        </div>
+    </section>
+
+    <!-- MAP -->
+    <section class="map-section">
+        <h2>Itt találsz meg minket</h2>
+        <p>3200 Gyöngyös, Bene utca 14.</p>
+        <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3207.3264400841513!2d19.937617776730534!3d47.79436597499205!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x47405a22f7006b83%3A0x232026fa27df2921!2zR3nDtm5necO2cywgQmVuZSB1LiAxNCwgMzIwMA!5e1!3m2!1shu!2shu!4v1778432403321!5m2!1shu!2shu" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+        <div class="map-btns">
+            <a href="https://maps.app.goo.gl/bzPebpbMpKrpijYW9" target="_blank" class="btn-map btn-gmaps">📍 Google Maps Navigáció</a>
+            <a href="https://waze.com/ul?q=Bene+utca+14%2C+Gy%C3%B6ngy%C3%B6s&navigate=yes" target="_blank" class="btn-map btn-waze">🚗 Waze Navigáció</a>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p><strong>JÁZMIN LOVASUDVAR</strong> | Gyöngyös, Bene u. 14. | +36 20 500 9664 | <a href="mailto:info@jazminlovasudvar.hu" style="color:#aaa;text-decoration:none;">info@jazminlovasudvar.hu</a></p>
+    <p style="margin-top:10px;"><a href="adatkezeles.html" style="color:#666;text-decoration:none;font-size:13px;">Adatkezelési tájékoztató</a></p>
+    <a href="admin-login.html" style="color:#444;text-decoration:none;font-size:13px;margin-top:15px;display:inline-block;padding:8px 16px;border:1px solid #444;border-radius:20px;">🔐 Admin</a>
+</footer>
+
+<div class="sticky-cta" id="stickyCta">
+    <button class="btn-submit" onclick="submitBooking()">FOGLALÁS MEGERŐSÍTÉSE</button>
+</div>
+
+<script>
+const SUPABASE_URL = "https://ktzlczqhqnuluyuedhot.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0emxjenFocW51bHV5dWVkaG90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MjgxMjEsImV4cCI6MjA5NDEwNDEyMX0.yfNCvcMbSIWcrmyInCQo-1LX7Z4w5kT5drNxe6kfBSk";
+const API = SUPABASE_URL + "/rest/v1/bookings";
+
+const EDGE_URL = SUPABASE_URL + "/functions/v1/Send-email";
+
+let selService = null;
+let selTime = null;
+
+// ════════════════════════════════════════════════════
+// SAJÁT NAPTÁR – iOS-en is egységes, a tiltott napok
+// eleve nem kattinthatók (nem a böngésző natív widgetje)
+// ════════════════════════════════════════════════════
+const _pad2 = n => String(n).padStart(2, "0");
+
+// 48 órás minimum időpont
+function getMinBookDate() {
+    const d = new Date();
+    d.setHours(d.getHours() + 48);
+    return d;
+}
+
+// A naptár által épp mutatott hónap (év, hónap 0-indexelt)
+let calViewYear, calViewMonth;
+
+// Egy nap foglalható-e? (csak a 48 órás szabályt nézi itt;
+// a szezon/hétvége/szünet logika a generateTimeSlots-ban marad)
+function isDaySelectable(year, month, day) {
+    // a nap vége (23:59:59) – ha bármely időpontja eléri a 48 órát, a nap nyitható
+    const dayEnd = new Date(year, month, day, 23, 59, 59);
+    return dayEnd.getTime() >= getMinBookDate().getTime();
+}
+
+// A naptár kirajzolása az aktuális calViewYear/calViewMonth alapján
+function renderCalendar() {
+    const grid = document.getElementById("calGrid");
+    const title = document.getElementById("calTitle");
+    if (!grid || !title) return;
+
+    const monthNames = ["január","február","március","április","május","június",
+                        "július","augusztus","szeptember","október","november","december"];
+    title.textContent = calViewYear + ". " + monthNames[calViewMonth];
+
+    grid.innerHTML = "";
+
+    // A hónap első napja melyik hét napja (hétfő = 0)
+    const firstDay = new Date(calViewYear, calViewMonth, 1);
+    let startWeekday = firstDay.getDay(); // 0=vas
+    startWeekday = (startWeekday === 0) ? 6 : startWeekday - 1; // hétfő=0
+
+    // Üres cellák a hónap eleje előtt
+    for (let i = 0; i < startWeekday; i++) {
+        const empty = document.createElement("div");
+        empty.className = "cal-day empty";
+        grid.appendChild(empty);
+    }
+
+    // A hónap napjai
+    const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+    const selectedVal = document.getElementById("bookDate").value;
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const cell = document.createElement("div");
+        cell.className = "cal-day";
+        cell.textContent = day;
+
+        const selectable = isDaySelectable(calViewYear, calViewMonth, day);
+        const dateStr = calViewYear + "-" + _pad2(calViewMonth + 1) + "-" + _pad2(day);
+
+        if (selectable) {
+            cell.classList.add("available");
+            if (selectedVal === dateStr) cell.classList.add("selected");
+            cell.addEventListener("click", () => {
+                document.getElementById("bookDate").value = dateStr;
+                renderCalendar();        // újrarajzol, hogy a kiválasztás látszódjon
+                generateTimeSlots();     // a meglévő logika fut tovább
+            });
+        } else {
+            cell.classList.add("disabled");
+        }
+        grid.appendChild(cell);
+    }
+
+    // A "előző hónap" gomb tiltása, ha a mutatott hónap a mai hónap (vagy korábbi)
+    const now = new Date();
+    const prevBtn = document.getElementById("calPrev");
+    const isCurrentOrPast = (calViewYear < now.getFullYear()) ||
+        (calViewYear === now.getFullYear() && calViewMonth <= now.getMonth());
+    prevBtn.disabled = isCurrentOrPast;
+}
+
+// Naptár inicializálása az aktuális hónappal
+function initCalendar() {
+    const now = new Date();
+    calViewYear = now.getFullYear();
+    calViewMonth = now.getMonth();
+    renderCalendar();
+
+    document.getElementById("calPrev").addEventListener("click", () => {
+        if (calViewMonth === 0) { calViewMonth = 11; calViewYear--; }
+        else { calViewMonth--; }
+        renderCalendar();
+    });
+    document.getElementById("calNext").addEventListener("click", () => {
+        if (calViewMonth === 11) { calViewMonth = 0; calViewYear++; }
+        else { calViewMonth++; }
+        renderCalendar();
+    });
+}
+
+// Indításkor felépítjük a naptárt
+initCalendar();
+
+function toggleMenu() {
+    document.getElementById("navLinks").classList.toggle("open");
+}
+
+function selectService(el) {
+    document.querySelectorAll(".service-card").forEach(c => c.classList.remove("selected"));
+    el.classList.add("selected");
+    selService = { name: el.dataset.service, dur: parseInt(el.dataset.dur), price: parseInt(el.dataset.price) };
+    updateSteps();
+    updateSummary();
+    if (document.getElementById("bookDate").value) generateTimeSlots();
+}
+
+// Segédfüggvények: perc ↔ HH:MM konverzió
+function strToMin(t) { const [h,m] = t.split(":"); return parseInt(h)*60 + parseInt(m); }
+function minToStr(m) { return String(Math.floor(m/60)).padStart(2,"0") + ":" + String(m%60).padStart(2,"0"); }
+
+async function generateTimeSlots() {
+    const dateVal = document.getElementById("bookDate").value;
+    if (!dateVal) return;
+
+    const grid = document.getElementById("timeGrid");
+    const loading = document.getElementById("slotsLoading");
+    const closed = document.getElementById("closedMessage");
+
+    grid.innerHTML = "";
+    selTime = null;
+    document.getElementById("selectedTime").value = "";
+    closed.style.display = "none";
+
+    // ── BÖNGÉSZŐFÜGGETLEN, iOS-BIZTOS DÁTUM-ELLENŐRZÉS ──
+    // FONTOS: iOS Safari a "2026-05-22T23:59:59" string-et félreértelmezheti
+    // (NaN-t adhat), ezért NEM stringből építünk dátumot, hanem a dátum
+    // komponenseiből (év, hónap, nap) – ezt minden böngésző egyformán kezeli.
+    const parts = dateVal.split("-");           // ["2026","05","22"]
+    const cy = parseInt(parts[0], 10);
+    const cm = parseInt(parts[1], 10) - 1;       // hónap 0-indexelt
+    const cd = parseInt(parts[2], 10);
+
+    // A választott napot a nap végén (23:59:59) vesszük – így az aznapi
+    // késő esti időpontok is foglalhatók, ha elérik a 48 órát.
+    const chosenDate = new Date(cy, cm, cd, 23, 59, 59);
+
+    // 48 órás minimum a MOSTANI időponttól
+    const minBookDate = new Date();
+    minBookDate.setHours(minBookDate.getHours() + 48);
+
+    // BIZTONSÁGI ELLENŐRZÉS: ha a dátum bármiért érvénytelen (NaN),
+    // vagy túl korai, TILTUNK. Inkább tiltsunk feleslegesen, mint
+    // hogy egy érvénytelen dátumot átengedjünk.
+    const dateInvalid = isNaN(chosenDate.getTime()) ||
+                        !parts[0] || !parts[1] || !parts[2] ||
+                        isNaN(cy) || isNaN(cm) || isNaN(cd);
+
+    if (dateInvalid || chosenDate.getTime() < minBookDate.getTime()) {
+        loading.style.display = "none";
+        grid.innerHTML = "";
+        closed.style.display = "block";
+        closed.innerHTML = "⛔ Erre a napra már nem lehet foglalni. " +
+            "Kérjük, válassz egy legalább 48 órával későbbi napot!";
+        // A hibás dátumot töröljük, és a naptárat újrarajzoljuk
+        document.getElementById("bookDate").value = "";
+        if (typeof renderCalendar === "function") renderCalendar();
+        updateSummary();
+        return;
+    }
+
+    loading.style.display = "block";
+    updateSummary();
+
+    const d = new Date(dateVal);
+    const day = d.getDay(); // 0=vasárnap, 6=szombat
+    const m = d.getMonth(); // 0=január, 11=december
+    const dd = d.getDate();
+    const isWeekend = day === 0 || day === 6;
+
+    // Szezon: április (3) – október (9)
+    const inSeason = m >= 3 && m <= 9;
+
+    if (!inSeason) {
+        loading.style.display = "none";
+        closed.style.display = "block";
+        document.getElementById("closedMessage").innerHTML =
+            "<strong>Ebben az időszakban zárva vagyunk.</strong><br>Április–október között fogadunk vendégeket.";
+        updateSteps();
+        return;
+    }
+
+    // Pontos nyári időszámítás detektálás (utolsó márc. vasárnap – utolsó okt. vasárnap)
+    function isSummerTimeFn(date) {
+        const jan = new Date(date.getFullYear(), 0, 1);
+        const jul = new Date(date.getFullYear(), 6, 1);
+        const stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+        return date.getTimezoneOffset() < stdOffset;
+    }
+    const isSummerTime = isSummerTimeFn(d);
+
+    // Iskolai szünet lekérdezése Supabase-ből
+    let isSchoolHoliday = false;
+    try {
+        const hResp = await fetch(
+            SUPABASE_URL + "/rest/v1/school_holidays?date_from=lte." + dateVal + "&date_to=gte." + dateVal + "&select=id",
+            { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }
+        );
+        if (hResp.ok) {
+            const holidays = await hResp.json();
+            isSchoolHoliday = holidays.length > 0;
+        }
+    } catch(e) { console.warn("Szünet lekérdezési hiba:", e); }
+
+    // Zárási idő
+    // Nyáron 20:00 (1200 perc), TÉLEN 16:00 (960 perc) – télen 16 óra után már sötét.
+    const endMin = isSummerTime ? 1200 : 960;
+
+    // Időablakok összeállítása
+    // Hétvégén: reggel 09:00-10:00, szünet, délután 14:00-tól
+    // Iskolai szünet hétköznapján: 09:00-tól
+    // Tanítási időszak hétköznapján: 14:00-tól
+    const timeWindows = [];
+
+    if (isWeekend) {
+        timeWindows.push({ from: 540, to: 600 });   // 09:00 – 10:00
+        timeWindows.push({ from: 840, to: endMin }); // 14:00 – zárás
+    } else if (isSchoolHoliday) {
+        timeWindows.push({ from: 540, to: endMin }); // 09:00 – zárás
+    } else {
+        timeWindows.push({ from: 840, to: endMin }); // 14:00 – zárás
+    }
+
+    const dur = selService ? selService.dur : 40;
+
+    try {
+        const resp = await fetch(API + "?date=eq." + dateVal + "&status=neq.LEMONDVA&select=start_time,end_time,name", {
+            headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY }
+        });
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+        const reserved = await resp.json();
+
+        loading.style.display = "none";
+
+        const isClosedDay = reserved.some(r => r.name === "ZÁRVA");
+        if (isClosedDay) {
+            closed.style.display = "block";
+            updateSteps();
+            return;
+        }
+
+        // Időpontok generálása minden ablakra
+        const possibleStarts = new Set();
+
+        timeWindows.forEach(({ from, to }) => {
+            for (let t = from; t <= to; t += 30) {
+                possibleStarts.add(t);
+            }
+            // Foglalások végpontjai is lehetséges kezdési időpontok (ha az ablakba esnek)
+            reserved.forEach(r => {
+                if (r.name !== "ZÁRVA" && r.end_time >= from && r.end_time <= to) {
+                    possibleStarts.add(r.end_time);
+                }
+            });
+        });
+
+        // Rendezett lista
+        const sortedStarts = [...possibleStarts].sort((a, b) => a - b);
+
+        let count = 0;
+
+        for (const cur of sortedStarts) {
+            // Ellenőrzés: az időpont valamelyik ablakba esik-e, és befér-e a blokk
+            const fitsInWindow = timeWindows.some(({ from, to }) =>
+                cur >= from && cur + dur <= to
+            );
+            if (!fitsInWindow) continue;
+
+            const tStr = minToStr(cur);
+
+            // Ütközés ellenőrzés: start_time és end_time egész számok (percek)
+            const conflict = reserved.some(r => {
+                return cur < r.end_time && (cur + dur) > r.start_time;
+            });
+
+            const slot = document.createElement("div");
+            slot.className = "time-slot" + (conflict ? " reserved" : "");
+            slot.textContent = tStr;
+
+            if (!conflict) {
+                // 48 órás ellenőrzés
+                const selectedDateTime = new Date(dateVal + 'T' + tStr + ':00');
+                const now = new Date();
+                const hoursDiff = (selectedDateTime - now) / (1000 * 60 * 60);
+                
+                if (hoursDiff < 48) {
+                    // Túl közeli időpont - kiszürkítve
+                    slot.classList.add('reserved');
+                    slot.title = 'Minimum 48 órával előre kell foglalni';
+                    grid.appendChild(slot);
+                } else {
+                    slot.onclick = () => {
+                        document.querySelectorAll(".time-slot").forEach(s => s.classList.remove("selected"));
+                        slot.classList.add("selected");
+                        selTime = tStr;
+                        document.getElementById("selectedTime").value = tStr;
+                        updateSteps();
+                        updateSummary();
+                        if (window.innerWidth <= 768) document.getElementById("stickyCta").style.display = "block";
+                    };
+                    grid.appendChild(slot);
+                    count++;
+                }
+            }
+        }
+
+        if (count === 0) closed.style.display = "block";
+
+    } catch (e) {
+        loading.style.display = "none";
+        grid.innerHTML = '<p style="color:var(--red);font-size:14px;padding:10px 0;">Hiba az adatok betöltésekor. Kérjük próbáld újra.</p>';
+        console.error(e);
+    }
+
+    updateSteps();
+}
+
+function updateSummary() {
+    const summary = document.getElementById("summary");
+    if (!summary) return; // Skip if summary element doesn't exist
+    
+    const dateEl = document.getElementById("bookDate");
+    if (!dateEl) return;
+    
+    const date = dateEl.value;
+    if (selService && date && selTime) {
+        summary.style.display = "block";
+        const sumSvc = document.getElementById("sum-svc");
+        const sumDate = document.getElementById("sum-date");
+        const sumTime = document.getElementById("sum-time");
+        const sumPrice = document.getElementById("sum-price");
+        
+        if (sumSvc) sumSvc.textContent = selService.name;
+        if (sumDate) sumDate.textContent = formatDate(date);
+        if (sumTime) sumTime.textContent = selTime;
+        if (sumPrice) sumPrice.textContent = selService.price.toLocaleString("hu-HU") + " Ft";
+    } else {
+        summary.style.display = "none";
+    }
+}
+
+function formatDate(d) {
+    const [y, mo, day] = d.split("-");
+    return y + ". " + mo + ". " + day + ".";
+}
+
+function updateSteps() {
+    const date = document.getElementById("bookDate").value;
+    document.getElementById("st1").className = "step" + (selService ? " done" : "");
+    document.getElementById("st2").className = "step" + (selService && date ? " done" : selService ? " active" : "");
+    document.getElementById("st3").className = "step" + (selService && date && selTime ? " done" : (selService && date) ? " active" : "");
+}
+
+// ── Magyar telefonszám normalizálása egységes +36... alakra ──
+// Elfogad: +36..., 0036..., 06..., szóközökkel/kötőjelekkel.
+// Visszaad: "+36XXXXXXXXX" (12 karakter) vagy null, ha érvénytelen.
+function normalizeHungarianPhone(raw) {
+    if (!raw) return null;
+    // Csak a számjegyeket és a + jelet tartjuk meg
+    let s = String(raw).replace(/[^\d+]/g, "");
+    // 0036... → +36..., 06... → +36..., 36... → +36...
+    if (s.startsWith("0036")) s = "+36" + s.slice(4);
+    else if (s.startsWith("06")) s = "+36" + s.slice(2);
+    else if (s.startsWith("36")) s = "+36" + s.slice(2);
+    else if (s.startsWith("+36")) { /* már jó */ }
+    else return null; // nincs felismerhető magyar előtag
+    // A +36 után pontosan 9 számjegy kell (mobil és vezetékes is)
+    if (/^\+36\d{9}$/.test(s)) return s;
+    return null;
+}
+
+function validate() {
+    let ok = true;
+    [
+        { id: "custName",  err: "err-name",  fn: v => v.trim().length >= 2 },
+        { id: "custEmail", err: "err-email", fn: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+        { id: "custPhone", err: "err-phone", fn: v => normalizeHungarianPhone(v) !== null }
+    ].forEach(c => {
+        const el = document.getElementById(c.id);
+        const errEl = document.getElementById(c.err);
+        if (!c.fn(el.value)) { el.classList.add("err-field"); errEl.style.display = "block"; ok = false; }
+        else { el.classList.remove("err-field"); errEl.style.display = "none"; }
+    });
+    if (!selService) { alert("Kérjük válassz szolgáltatást!"); ok = false; }
+    if (!document.getElementById("bookDate").value) { alert("Kérjük válassz napot!"); ok = false; }
+    if (!selTime) { alert("Kérjük válassz időpontot!"); ok = false; }
+
+    // ── 48 órás szabály – második védvonal (iOS naptár megkerülése ellen) ──
+    // iOS-biztos: a dátumot komponensekből építjük, nem stringből.
+    const dVal = document.getElementById("bookDate").value;
+    if (dVal) {
+        const p = dVal.split("-");
+        const chosen = new Date(parseInt(p[0],10), parseInt(p[1],10)-1, parseInt(p[2],10), 23, 59, 59);
+        const minD = new Date();
+        minD.setHours(minD.getHours() + 48);
+        // Érvénytelen vagy túl korai dátum → tiltás
+        if (isNaN(chosen.getTime()) || chosen.getTime() < minD.getTime()) {
+            alert("⛔ Erre a napra már nem lehet foglalni. Kérjük, válassz egy legalább 48 órával későbbi napot!");
+            document.getElementById("bookDate").value = "";
+            if (typeof renderCalendar === "function") renderCalendar();
+            ok = false;
+        }
+    }
+
+    if (!document.getElementById("gdprCheck").checked) {
+        const errGdpr = document.getElementById("err-gdpr");
+        if (errGdpr) errGdpr.style.display = "block";
+        ok = false;
+    } else {
+        const errGdpr = document.getElementById("err-gdpr");
+        if (errGdpr) errGdpr.style.display = "none";
+    }
+    return ok;
+}
+
+async function submitBooking() {
+    if (!validate()) return;
+
+    const btn = document.getElementById("submitBtn");
+    const btnText = document.getElementById("btnText");
+    const spinner = document.getElementById("spinner");
+    btn.disabled = true; btnText.textContent = "KÜLDÉS..."; spinner.style.display = "block";
+
+    const date  = document.getElementById("bookDate").value;
+    const name  = document.getElementById("custName").value.trim();
+    const email = document.getElementById("custEmail").value.trim();
+    // A telefonszámot egységes +36... alakra hozzuk – így a tel: link
+    // mindenhol megbízhatóan működik (admin felület, e-mail).
+    const phone = normalizeHungarianPhone(document.getElementById("custPhone").value) || document.getElementById("custPhone").value.trim();
+
+    // Idő konvertálása percekbe (start_time, end_time)
+    const startMin = strToMin(selTime);
+    const endMin   = startMin + selService.dur;
+
+    const note = document.getElementById("custNote").value.trim();
+
+    // Payload a valódi táblaszerkezethez igazítva
+    const payload = {
+        date,
+        start_time: startMin,
+        end_time:   endMin,
+        name,
+        email,
+        phone,
+        service: selService.name,
+        note,
+        status: "AKTÍV"
+    };
+
+    try {
+        const resp = await fetch(API, {
+            method: "POST",
+            headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=representation" },
+            body: JSON.stringify(payload)
+        });
+        if (!resp.ok) {
+            const errData = await resp.json();
+            if (resp.status === 409 || (errData.code === "23505") || JSON.stringify(errData).includes("unique")) {
+                btn.disabled = false; btnText.textContent = "FOGLALÁS MEGERŐSÍTÉSE"; spinner.style.display = "none";
+                alert("⚠️ Sajnáljuk, ezt az időpontot az imént valaki más foglalta el! Kérjük válassz másik időpontot.");
+                generateTimeSlots();
+                return;
+            }
+            throw new Error("Supabase: " + resp.status);
+        }
+
+        // Elmentjük a Supabase által generált UUID-t
+        const inserted = await resp.json();
+        const bookingDbId = inserted[0]?.id;
+
+        // ── Draft bizonylat: NEM itt jön létre! ──
+        // A 'trg_create_draft_receipt' adatbázis-trigger automatikusan
+        // létrehozza a draft bizonylatot minden új AKTÍV foglaláshoz.
+        // Ha itt is létrehoznánk, DUPLA bizonylat keletkezne.
+
+        // ── Naptár linkek generálása ──
+        const dateStr   = date.replace(/-/g, '');
+        const startH    = String(Math.floor(startMin/60)).padStart(2,'0');
+        const startMn   = String(startMin%60).padStart(2,'0');
+        const endH      = String(Math.floor(endMin/60)).padStart(2,'0');
+        const endMn     = String(endMin%60).padStart(2,'0');
+        const gcalStart = `${dateStr}T${startH}${startMn}00`;
+        const gcalEnd   = `${dateStr}T${endH}${endMn}00`;
+
+        const gcalLink = "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+            "&text=" + encodeURIComponent("Lovaglás – " + selService.name) +
+            "&dates=" + gcalStart + "/" + gcalEnd +
+            "&details=" + encodeURIComponent("Vendég: " + name + "\nTelefon: " + phone + "\nSzolgáltatás: " + selService.name) +
+            "&location=" + encodeURIComponent("3200 Gyöngyös, Bene u. 14. – Jázmin Lovasudvar");
+
+        // ICS fájl generálása az ügyfélnek (minden naptárba importálható)
+        const icsContent = [
+            "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Jázmin Lovasudvar//HU",
+            "BEGIN:VEVENT",
+            "DTSTART:" + gcalStart,
+            "DTEND:"   + gcalEnd,
+            "SUMMARY:🐴 " + selService.name + " – " + formatDate(date) + " " + selTime,
+            "DESCRIPTION:Jázmin Lovasudvar\\n3200 Gyöngyös\\, Bene u. 14.\\n+36 20 500 9664",
+            "LOCATION:3200 Gyöngyös\\, Bene u. 14.",
+            "END:VEVENT", "END:VCALENDAR"
+        ].join("\r\n");
+        // FONTOS: az .ics letöltés a folyamat VÉGÉRE került (lásd lejjebb),
+        // hogy iOS Safarin se akadályozza az e-mail és naptár küldését.
+
+        // ── E-mail küldés Supabase Edge Function-nel ──
+        try {
+            const emailResp = await fetch(EDGE_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": "Bearer " + SUPABASE_KEY
+                },
+                body: JSON.stringify({
+                    type: "booking",
+                    booking: { id: bookingDbId, name, email, phone, service: selService.name, date, start_time: startMin, note }
+                })
+            });
+            if (!emailResp.ok) {
+                console.warn("Edge Function hiba:", await emailResp.text());
+                // Email hiba nem akadályozza meg a foglalást
+            }
+        } catch (emailErr) {
+            console.warn("Email küldési hiba:", emailErr);
+            // Email hiba nem akadályozza meg a foglalást
+        }
+
+        // ── Cloudflare Worker → Google Calendar automatikus bejegyzés + event ID mentése ──
+        try {
+            const calResp = await fetch("https://calendar-bot.jazminlovasudvar-gyongyos.workers.dev/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ date, startMin, endMin, name, phone, service: selService.name })
+            });
+            if (calResp.ok) {
+                const calData = await calResp.json();
+                if (calData.eventId && bookingDbId) {
+                    // Mentjük az event ID-t a foglalás UUID-ja alapján – megbízható
+                    fetch(API + "?id=eq." + bookingDbId, {
+                        method: "PATCH",
+                        headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY, "Content-Type": "application/json", "Prefer": "return=minimal" },
+                        body: JSON.stringify({ calendar_event_id: calData.eventId })
+                    }).catch(e => console.warn("Event ID mentési hiba:", e));
+                }
+            }
+        } catch(err) { console.warn("Naptár worker hiba:", err); }
+
+        // ── ICS fájl letöltése (csak kényelmi extra, a folyamat VÉGÉN) ──
+        // try/catch-ben, mert iOS Safarin az icsA.click() hibát dobhat –
+        // de itt már az e-mail és a naptár lefutott, így nem akadályoz semmit.
+        try {
+            const icsBlob = new Blob([icsContent], { type: 'text/calendar' });
+            const icsUrl  = URL.createObjectURL(icsBlob);
+            const icsA    = document.createElement('a');
+            icsA.href = icsUrl;
+            icsA.download = "foglalas-" + date + "-" + selTime.replace(":", "") + ".ics";
+            icsA.click();
+        } catch(icsErr) {
+            console.warn("ICS letöltési hiba (nem kritikus):", icsErr);
+        }
+
+        // Siker képernyő
+        document.getElementById("formInner").style.display = "none";
+        document.getElementById("successScreen").style.display = "block";
+        document.getElementById("stickyCta").style.display = "none";
+        document.getElementById("successMsg").innerHTML =
+            `Köszönjük, <strong>${name}</strong>! Foglalásod rögzítettük.<br>
+            Hamarosan emailben visszaigazoljuk a <strong>${email}</strong> címre.<br>
+            <small style="color:#aaa;font-size:12px;">${formatDate(date)} ${selTime} &nbsp;|&nbsp; ${selService.name}</small>`;
+        window.scrollTo({ top: 0, behavior: "smooth" });
+
+    } catch (err) {
+        btn.disabled = false; btnText.textContent = "FOGLALÁS MEGERŐSÍTÉSE"; spinner.style.display = "none";
+        alert("Hiba történt a mentés során. Kérjük próbáld újra, vagy hívj minket: +36 20 500 9664");
+        console.error(err);
+    }
+}
+
+// FAQ
+document.querySelectorAll(".faq-question").forEach(q => {
+    q.onclick = () => q.parentElement.classList.toggle("active");
+});
+
+// URL paraméter alapján automatikus szolgáltatás-kiválasztás
+// pl. foglalas.html?service=poni  →  Póni ismerkedő előre kijelölve
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const svc = params.get("service");
+    if (!svc) return;
+
+    const map = {
+        "poni":      0,   // Póni ismerkedő
+        "futoszar":  1,   // Futószáras oktatás
+        "tura":      2    // Vezetett túra
+    };
+
+    const idx = map[svc.toLowerCase()];
+    if (idx === undefined) return;
+
+    const cards = document.querySelectorAll(".service-card");
+    if (cards[idx]) {
+        selectService(cards[idx]);
+        // Görgessen a naptárhoz, hogy rögtön látható legyen a következő lépés
+        setTimeout(() => {
+            const cal = document.getElementById("customCalendar");
+            if (cal) cal.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 300);
+    }
+})();
+</script>
+</body>
+</html>
