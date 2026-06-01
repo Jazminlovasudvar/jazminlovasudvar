@@ -210,8 +210,25 @@ async function torol(bookingId, calendarEventId) {
             method: "DELETE",
             headers: authHeaders
         });
-        if (!resp.ok) throw new Error("Törlési hiba a Supabase-ben.");
 
+        if (!resp.ok) {
+            // A Supabase/trigger hibaüzenetének kiolvasása
+            let hibaUzenet = "Törlési hiba a Supabase-ben.";
+            try {
+                const errData = await resp.json();
+                if (errData && errData.message) {
+                    // Ha a trigger blokkolta (kiállított bizonylat)
+                    if (errData.message.includes("kiállított") || errData.message.includes("active")) {
+                        hibaUzenet = "❌ Ez a foglalás NEM törölhető, mert kiállított (aktív) bizonylat tartozik hozzá. Csak piszkozat (draft) állapotú foglalás törölhető.";
+                    } else {
+                        hibaUzenet = errData.message;
+                    }
+                }
+            } catch(parseErr) { /* marad az alapértelmezett üzenet */ }
+            throw new Error(hibaUzenet);
+        }
+
+        // Sikeres törlés esetén a naptár bejegyzés törlése
         if (calendarEventId) {
             try {
                 await fetch("https://calendar-bot.jazminlovasudvar-gyongyos.workers.dev/", {
@@ -223,7 +240,7 @@ async function torol(bookingId, calendarEventId) {
         }
         loadAllBookings();
     } catch(e) {
-        alert("❌ Törlési hiba: " + e.message);
+        alert(e.message);
     }
 }
 
