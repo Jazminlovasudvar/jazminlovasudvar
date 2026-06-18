@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bérletem – Jázmin Lovasudvar</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐴</text></svg>">
+    <style>
+        :root {
+            --dark-green: #2e7d32;
+            --dark-green-hover: #1b5e20;
+            --accent-gold: #b08d57;
+            --bg-cream: #faf8f5;
+            --white: #ffffff;
+            --text-dark: #2c3e50;
+            --muted: #7f8c8d;
+            --border: #e0e0e0;
+            --green-light: #e8f5e9;
+            --red: #c0392b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-cream); color: var(--text-dark); line-height: 1.7; }
+
+        header { background: var(--white); height: 80px; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 15px rgba(0,0,0,0.05); }
+        .logo { color: var(--dark-green); font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 20px; text-decoration: none; text-transform: uppercase; }
+
+        .container { max-width: 600px; margin: 30px auto 60px; padding: 0 5%; }
+        .card { background: white; padding: 36px; border-radius: 25px; box-shadow: 0 20px 50px rgba(0,0,0,0.08); }
+
+        .loading-state, .error-state { text-align: center; padding: 50px 20px; }
+        .error-state .icon { font-size: 56px; margin-bottom: 16px; }
+        .error-state h2 { font-family: 'Montserrat', sans-serif; color: var(--text-dark); margin-bottom: 10px; font-size: 22px; }
+        .error-state p { color: var(--muted); font-size: 15px; }
+        .error-state .phone { margin-top: 20px; font-weight: 600; color: var(--dark-green); }
+
+        /* Bérlet fejléc */
+        .pass-head { text-align: center; padding-bottom: 20px; border-bottom: 2px dashed var(--border); margin-bottom: 22px; }
+        .pass-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 8px; }
+        .pass-name { font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 700; color: var(--dark-green); }
+        .pass-type { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+        /* Nagy hátralévő szám */
+        .remaining-hero { text-align: center; margin: 24px 0; }
+        .remaining-hero .big { font-family: 'Montserrat', sans-serif; font-size: 64px; font-weight: 700; color: var(--dark-green); line-height: 1; }
+        .remaining-hero .label { font-size: 14px; color: var(--muted); margin-top: 6px; }
+        .remaining-hero.empty .big { color: var(--accent-gold); }
+
+        /* Patkó-rács */
+        .hoof-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 24px 0; }
+        .hoof {
+            aspect-ratio: 1; border: 2px solid var(--border); border-radius: 14px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            font-size: 13px; color: #ccc; background: #fafafa;
+        }
+        .hoof.used { background: var(--green-light); border-color: var(--dark-green); color: var(--dark-green); }
+        .hoof.gift { border-style: dashed; border-color: var(--accent-gold); color: var(--accent-gold); }
+        .hoof.gift.used { background: #fdf6ec; border-color: var(--accent-gold); color: var(--accent-gold); }
+        .hoof .num { font-weight: 700; font-size: 16px; }
+        .hoof .date { font-size: 10px; margin-top: 3px; }
+        .hoof .check { font-size: 18px; }
+
+        .info-rows { background: var(--green-light); border-radius: 16px; padding: 18px 20px; margin-top: 10px; }
+        .info-rows .r { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+        .info-rows .r .k { color: var(--muted); font-weight: 600; }
+        .info-rows .r .v { font-weight: 700; }
+        .info-rows .r .v.expired { color: var(--red); }
+
+        .legend { display: flex; gap: 18px; justify-content: center; margin-top: 18px; font-size: 12px; color: var(--muted); flex-wrap: wrap; }
+        .legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .legend .dot { width: 14px; height: 14px; border-radius: 4px; display: inline-block; }
+        .legend .dot.used { background: var(--green-light); border: 2px solid var(--dark-green); }
+        .legend .dot.free { background: #fafafa; border: 2px solid var(--border); }
+        .legend .dot.gift { background: #fdf6ec; border: 2px dashed var(--accent-gold); }
+
+        .expired-banner { background: #fff5f5; border: 1.5px dashed var(--red); color: var(--red); padding: 14px; border-radius: 12px; text-align: center; font-size: 14px; margin-top: 18px; }
+        .footer-hint { text-align: center; font-size: 13px; color: var(--muted); margin-top: 22px; line-height: 1.6; }
+        .footer-hint strong { color: var(--dark-green); }
+
+        @media (max-width: 480px) {
+            .card { padding: 26px 20px; }
+            .remaining-hero .big { font-size: 52px; }
+            .hoof-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="index.html" class="logo">JÁZMIN LOVASUDVAR</a>
+</header>
+
+<main class="container">
+    <div class="card">
+        <div id="loadingState" class="loading-state">⏳ Bérlet betöltése...</div>
+
+        <div id="errorState" class="error-state" style="display:none;">
+            <div class="icon">🎫</div>
+            <h2>A bérlet nem található</h2>
+            <p id="errorText">Ez a hivatkozás érvénytelen. Kérjük, ellenőrizd a linket, vagy keress minket telefonon.</p>
+            <p class="phone">📞 +36 20 500 9664</p>
+        </div>
+
+        <div id="passState" style="display:none;">
+            <!-- JS tölti -->
+        </div>
+    </div>
+
+    <p class="footer-hint" id="footerHint" style="display:none;">
+        Ezt az oldalt bármikor megnyithatod ezzel a linkkel.<br>
+        Kérdésed van? Hívj minket: <strong>+36 20 500 9664</strong>
+    </p>
+</main>
+
+<script>
+    const SUPABASE_URL = "https://ktzlczqhqnuluyuedhot.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0emxjenFocW51bHV5dWVkaG90Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MjgxMjEsImV4cCI6MjA5NDEwNDEyMX0.yfNCvcMbSIWcrmyInCQo-1LX7Z4w5kT5drNxe6kfBSk";
+
+    function showError(msg) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('passState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        if (msg) document.getElementById('errorText').textContent = msg;
+    }
+
+    function formatDateHu(dateStr) {
+        if (!dateStr) return '—';
+        const months = ["január","február","március","április","május","június","július","augusztus","szeptember","október","november","december"];
+        const p = dateStr.split('-');
+        return p[0] + '. ' + months[parseInt(p[1],10)-1] + ' ' + parseInt(p[2],10) + '.';
+    }
+
+    function formatDateShort(dateStr) {
+        if (!dateStr) return '';
+        const p = dateStr.split('-');
+        return parseInt(p[1],10) + '.' + parseInt(p[2],10) + '.';
+    }
+
+    function esc(s) {
+        return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    async function loadPass() {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
+
+        if (!token) {
+            showError('Hiányzik az azonosító. Kérjük, használd a kapott teljes linket.');
+            return;
+        }
+
+        try {
+            // A biztonságos RPC függvény hívása – csak ez az egy bérlet jön vissza,
+            // telefonszám és szülő-név NÉLKÜL (azokat a függvény nem adja ki).
+            const resp = await fetch(SUPABASE_URL + '/rest/v1/rpc/get_pass_by_token', {
+                method: 'POST',
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': 'Bearer ' + SUPABASE_KEY,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ pass_token: token })
+            });
+
+            if (!resp.ok) {
+                showError('Nem sikerült betölteni a bérletet. Kérjük, próbáld újra később.');
+                return;
+            }
+
+            const pass = await resp.json();
+            if (!pass) {
+                showError('Ehhez a hivatkozáshoz nem találtunk bérletet.');
+                return;
+            }
+
+            renderPass(pass);
+        } catch (err) {
+            console.error('Betöltési hiba:', err);
+            showError('Hálózati hiba történt. Kérjük, ellenőrizd az internetkapcsolatot.');
+        }
+    }
+
+    function renderPass(pass) {
+        const total = pass.total_sessions;
+        const used = pass.used_sessions;
+        const remaining = total - used;
+        const sessions = pass.sessions || [];
+
+        const sessionByNum = {};
+        sessions.forEach(s => { sessionByNum[s.session_number] = s; });
+
+        const today = new Date().toISOString().split('T')[0];
+        const isExpired = pass.expiry_date < today && pass.status !== 'elfogyott';
+        const isEmpty = remaining <= 0;
+
+        // Patkó-rács
+        let hoofGrid = '<div class="hoof-grid">';
+        for (let n = 1; n <= total; n++) {
+            const isGift = n === total;
+            const isUsed = n <= used;
+            const s = sessionByNum[n];
+            const cls = 'hoof' + (isUsed ? ' used' : '') + (isGift ? ' gift' : '');
+            const label = isGift ? '+1🎁' : n;
+            let inner = `<span class="num">${label}</span>`;
+            if (isUsed && s) {
+                inner += `<span class="date">${formatDateShort(s.session_date)}</span>`;
+            } else if (isUsed) {
+                inner += `<span class="check">✓</span>`;
+            }
+            hoofGrid += `<div class="${cls}">${inner}</div>`;
+        }
+        hoofGrid += '</div>';
+
+        const heroLabel = isEmpty ? 'A bérlet elfogyott' : (remaining === 1 ? 'alkalom van még' : 'alkalom van még');
+
+        document.getElementById('passState').innerHTML = `
+            <div class="pass-head">
+                <div class="pass-eyebrow">Bérlet</div>
+                <div class="pass-name">${esc(pass.child_name)}</div>
+                <div class="pass-type">10+1 alkalmas oktatás</div>
+            </div>
+
+            <div class="remaining-hero ${isEmpty ? 'empty' : ''}">
+                <div class="big">${isEmpty ? '🎉' : remaining}</div>
+                <div class="label">${heroLabel}</div>
+            </div>
+
+            ${hoofGrid}
+
+            <div class="legend">
+                <span><span class="dot used"></span> Felhasznált</span>
+                <span><span class="dot free"></span> Szabad</span>
+                <span><span class="dot gift"></span> Ajándék</span>
+            </div>
+
+            <div class="info-rows">
+                <div class="r"><span class="k">Kiállítva</span><span class="v">${formatDateHu(pass.issue_date)}</span></div>
+                <div class="r"><span class="k">Érvényes eddig</span><span class="v ${isExpired ? 'expired' : ''}">${formatDateHu(pass.expiry_date)}</span></div>
+                <div class="r"><span class="k">Felhasznált</span><span class="v">${used} / ${total} alkalom</span></div>
+            </div>
+
+            ${isExpired ? '<div class="expired-banner">⏳ Ez a bérlet lejárt. Kérjük, egyeztess velünk telefonon a hátralévő alkalmakról.</div>' : ''}
+        `;
+
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('passState').style.display = 'block';
+        document.getElementById('footerHint').style.display = 'block';
+    }
+
+    loadPass();
+</script>
+
+</body>
+</html>
