@@ -379,12 +379,18 @@
                         <input type="text" id="npParentName" placeholder="pl. Kovács Anna">
                     </div>
                     <div class="form-field">
-                        <label>📞 Telefonszám</label>
+                        <label>📞 Telefonszám *</label>
                         <input type="tel" id="npPhone" placeholder="+36 20 123 4567">
-                        <div class="hint">Ez alapján lehet később megkeresni a bérletet.</div>
+                        <div class="hint">A foglaláskor megadott telefonszámmal egyezzen.</div>
+                    </div>
+                    <div class="form-field">
+                        <label>📧 Szülő e-mail címe *</label>
+                        <input type="email" id="npEmail" placeholder="szulo@email.hu">
+                        <div class="hint">A foglaláskor megadott e-mail címmel egyezzen. Erre küldjük ki a bérlet linkjét és QR-kódját.</div>
                     </div>
                     <div style="background:#e8f5e9; border:1px solid #a5d6a7; padding:12px; border-radius:10px; margin:16px 0; font-size:13px; color:#1b5e20;">
-                        🎁 A bérlet automatikusan <strong>10+1 alkalmas</strong>, és <strong>6 hónapig</strong> érvényes a kiállítástól.
+                        🎁 A bérlet automatikusan <strong>10+1 alkalmas</strong>, és <strong>6 hónapig</strong> érvényes a kiállítástól.<br>
+                        📧 A link és QR <strong>automatikusan kimegy</strong> a megadott e-mail címre. Ha a <strong>szülő neve + telefon + e-mail</strong> egyezik egy meglévő foglalással, azt is jelezzük.
                     </div>
                     <div style="display:flex; gap:10px; justify-content:flex-end;">
                         <button type="button" class="btn btn-secondary" onclick="closeNewPassModal()">❌ Mégse</button>
@@ -424,6 +430,8 @@
         };
         const PASSES_API = `${SUPABASE_URL}/rest/v1/passes`;
         const SESSIONS_API = `${SUPABASE_URL}/rest/v1/pass_sessions`;
+        const BOOKINGS_API = `${SUPABASE_URL}/rest/v1/bookings`;
+        const EDGE_URL = `${SUPABASE_URL}/functions/v1/Send-email`;
         // A vendég-oldal alap URL-je a QR-kódhoz / linkhez
         const PASS_PUBLIC_URL = 'https://jazminlovasudvar.hu/berlet.html';
 
@@ -605,18 +613,66 @@
                 const childName = document.getElementById('npChildName').value.trim();
                 const parentName = document.getElementById('npParentName').value.trim() || null;
                 const phone = document.getElementById('npPhone').value.trim() || null;
+                const email = document.getElementById('npEmail').value.trim() || null;
 
                 if (!childName) {
                     showToast('⚠️ A lovas neve kötelező!', '#e67e22');
                     btn.disabled = false;
                     return;
                 }
+                if (!phone || !email) {
+                    showToast('⚠️ A telefon és az e-mail is kötelező!', '#e67e22');
+                    btn.disabled = false;
+                    return;
+                }
 
-                // A total_sessions, issue_date, expiry_date, status DEFAULT értékekkel jön létre (lásd SQL).
+                // ── Foglalás-egyezés keresése ──
+                // Egyezés feltétele: szülő neve + telefon + e-mail.
+                // Név: kis/nagybetű és felesleges szóköz NEM számít.
+                // Telefon: csak a számjegyek számítanak (formázás nem).
+                // E-mail: kisbetűsítve, pontos egyezés.
+                let matchedBooking = null;
+                try {
+                    // Az e-mail alapján szűrünk a szerveren (a legszűkebb), majd kliensoldalon
+                    // pontosítunk névre és telefonra.
+                    const emailLc = email.toLowerCase();
+                    const resp = await fetch(
+                        BOOKINGS_API + '?select=name,phone,email&email=ilike.' + encodeURIComponent(emailLc),
+                        { headers: SESSION_HEADERS }
+                    );
+                    if (resp.ok) {
+                        const candidates = await resp.json();
+                        const normName = s => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+                        const normPhone = s => (s || '').replace(/\D/g, '');
+                        const wantName = normName(parentName);
+                        const wantPhone = normPhone(phone);
+                        matchedBooking = candidates.find(b =>
+                            (b.email || '').toLowerCase() === emailLc &&
+                            normPhone(b.phone) === wantPhone &&
+                            (!wantName || normName(b.name) === wantName)
+                        ) || null;
+                    }
+                } catch (e) {
+                    console.warn('Foglalás-egyezés keresési hiba (nem kritikus):', e);
+                }
+
+                // Ha nincs egyezés, csak tájékoztatjuk Anikót — de az e-mail
+                // ettől függetlenül kimegy, mert a cím kötelezően meg van adva.
+                if (!matchedBooking) {
+                    const proceed = confirm(
+                        'Nincs pontosan egyező foglalás ezzel a névvel, telefonnal és e-maillel.\n\n' +
+                        'Létrehozod a bérletet?\n\n' +
+                        '(A megadott e-mail címre így is kimegy automatikusan a link és a QR.)'
+                    );
+                    if (!proceed) { btn.disabled = false; return; }
+                }
+
+                // A bérlet létrehozása (a total_sessions, issue_date, expiry_date, status DEFAULT)
                 const payload = {
                     child_name: childName,
                     parent_name: parentName,
-                    phone: phone
+                    phone: phone,
+                    email: email
                 };
 
                 const resp = await fetch(PASSES_API, {
@@ -631,13 +687,45 @@
                 }
 
                 const created = await resp.json();
-                showToast('✅ Bérlet létrehozva!', '#27ae60');
+                const newPass = created && created[0];
+
+                // ── Automatikus e-mail küldés, HA van e-mail cím (mindig van, mert kötelező) ──
+                if (newPass && newPass.email) {
+                    try {
+                        const emailResp = await fetch(EDGE_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+                            body: JSON.stringify({
+                                type: 'pass_created',
+                                pass: {
+                                    id: newPass.id,
+                                    child_name: newPass.child_name,
+                                    parent_name: newPass.parent_name,
+                                    parent_email: newPass.email,
+                                    expiry_date: newPass.expiry_date
+                                }
+                            })
+                        });
+                        if (emailResp.ok) {
+                            const matchNote = matchedBooking ? ' (foglalás-egyezés megtalálva)' : '';
+                            showToast('✅ Bérlet létrehozva, és az értesítő e-mail kiment a szülőnek!' + matchNote, '#27ae60');
+                        } else {
+                            showToast('✅ Bérlet létrehozva, de az e-mail küldés hibázott. A részletekből újraküldheted.', '#e67e22');
+                        }
+                    } catch (mailErr) {
+                        console.warn('E-mail küldési hiba:', mailErr);
+                        showToast('✅ Bérlet létrehozva, de az e-mail küldés hibázott. A részletekből újraküldheted.', '#e67e22');
+                    }
+                } else {
+                    showToast('✅ Bérlet létrehozva!', '#27ae60');
+                }
+
                 closeNewPassModal();
                 await loadPasses();
 
-                // Rögtön megnyitjuk a részleteket, hogy a QR-kód/link kinyomtatható legyen
-                if (created && created[0]) {
-                    openDetail(created[0].id);
+                // Megnyitjuk a részleteket (QR + link kézi továbbításhoz is)
+                if (newPass) {
+                    openDetail(newPass.id);
                 }
             } catch (e) {
                 console.error('Mentési hiba:', e);
@@ -739,6 +827,7 @@
                 <div class="detail-row"><div class="detail-label">🐴 Lovas:</div><div class="detail-value"><strong>${escapeHtml(pass.child_name)}</strong></div></div>
                 <div class="detail-row"><div class="detail-label">👤 Szülő:</div><div class="detail-value">${escapeHtml(pass.parent_name || '—')}</div></div>
                 <div class="detail-row"><div class="detail-label">📞 Telefon:</div><div class="detail-value">${escapeHtml(pass.phone || '—')}</div></div>
+                <div class="detail-row"><div class="detail-label">📧 E-mail:</div><div class="detail-value">${escapeHtml(pass.email || '—')}</div></div>
                 <div class="detail-row"><div class="detail-label">📅 Kiállítva:</div><div class="detail-value">${formatDate(pass.issue_date)}</div></div>
                 <div class="detail-row"><div class="detail-label">⏳ Érvényes:</div><div class="detail-value">${formatDate(pass.expiry_date)}</div></div>
                 <div class="detail-row"><div class="detail-label">🎫 Hátralévő:</div><div class="detail-value"><strong style="font-size:18px;color:var(--dark-green);">${remaining} alkalom</strong></div></div>
@@ -759,6 +848,7 @@
                     <input type="text" id="publicLinkInput" value="${publicLink}" readonly>
                     <button class="btn-small btn-view" onclick="copyLink()">📋 Másolás</button>
                 </div>
+                ${pass.email ? `<div style="margin-top:10px;"><button class="btn btn-success" style="width:100%;" onclick="resendPassEmail('${pass.id}')">📧 Link + QR küldése e-mailben (${escapeHtml(pass.email)})</button></div>` : '<p style="font-size:13px; color:#999; margin-top:10px;">Nincs e-mail cím megadva — a linket másold ki és küldd kézzel.</p>'}
             `;
 
             // QR-kód generálása
@@ -785,6 +875,39 @@
             } catch (e) {
                 document.execCommand('copy');
                 showToast('✅ Link másolva!', '#27ae60');
+            }
+        }
+
+        // Bérlet link + QR (újra)küldése e-mailben kézzel
+        async function resendPassEmail(passId) {
+            const pass = allPasses.find(p => p.id === passId);
+            if (!pass) return;
+            if (!pass.email) { showToast('⚠️ Nincs e-mail cím ehhez a bérlethez!', '#e67e22'); return; }
+            if (!confirm(`Elküldjük a bérlet linkjét és QR-kódját erre a címre?\n\n${pass.email}`)) return;
+
+            try {
+                const resp = await fetch(EDGE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+                    body: JSON.stringify({
+                        type: 'pass_created',
+                        pass: {
+                            id: pass.id,
+                            child_name: pass.child_name,
+                            parent_name: pass.parent_name,
+                            parent_email: pass.email,
+                            expiry_date: pass.expiry_date
+                        }
+                    })
+                });
+                if (resp.ok) {
+                    showToast('✅ E-mail elküldve!', '#27ae60');
+                } else {
+                    showToast('❌ E-mail küldési hiba.', '#c0392b');
+                }
+            } catch (e) {
+                console.error('E-mail küldési hiba:', e);
+                showToast('❌ E-mail küldési hiba: ' + e.message, '#c0392b');
             }
         }
 
