@@ -147,6 +147,11 @@
             <input type="date" id="szuro" onchange="szures()">
             <button class="btn-logout" style="width:100%; margin-top:10px;" onclick="load()">ÖSSZES MUTATÁSA</button>
         </div>
+        <div class="control-item">
+            <label><strong>Naptárból hiányzó bejegyzések pótlása:</strong></label>
+            <p style="font-size:12px;color:#777;margin:6px 0 10px;">Végignézi az AKTÍV, jövőbeli, naptár nélküli foglalásokat, és pótolja a Google Calendar bejegyzéseket.</p>
+            <button class="btn-red" onclick="syncMissingCalendarEvents()">HIÁNYZÓK PÓTLÁSA</button>
+        </div>
     </div>
 
     <!-- ISKOLAI SZÜNETEK -->
@@ -403,29 +408,119 @@
 
         const timeStr = document.getElementById('qTime').value;
         const startMin = parseInt(timeStr.split(':')[0])*60 + parseInt(timeStr.split(':')[1]);
+        const serviceName = document.getElementById('qService').value;
+        const endMin = startMin + 30;
         const payload = {
             date: date,
             start_time: startMin,
-            end_time: startMin + 30,
+            end_time: endMin,
             name: name,
-            service: document.getElementById('qService').value,
+            service: serviceName,
             status: "AKTÍV",
             email: "admin@jazminlovasudvar.hu",
             phone: ""
         };
 
         try {
+            // "return=representation", hogy visszakapjuk a beszúrt sor UUID-ját
+            // (erre szükség van a naptár event ID visszamentéséhez).
             const resp = await fetch(API, {
                 method: "POST",
-                headers: { ...authHeaders, "Prefer": "return=minimal" },
+                headers: { ...authHeaders, "Prefer": "return=representation" },
                 body: JSON.stringify(payload)
             });
             if (!resp.ok) throw new Error("HTTP " + resp.status);
+
+            const inserted = await resp.json();
+            const bookingDbId = inserted[0]?.id;
+
             document.getElementById('qName').value = "";
             alert("✅ Rögzítve!");
             load();
+
+            // ── Cloudflare Worker → Google Calendar bejegyzés + event ID mentése ──
+            // (ugyanaz a lépés, mint a nyilvános foglalási oldalon)
+            try {
+                const calResp = await fetch("https://calendar-bot.jazminlovasudvar-gyongyos.workers.dev/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ date, startMin, endMin, name, phone: "", service: serviceName })
+                });
+                if (calResp.ok) {
+                    const calData = await calResp.json();
+                    if (calData.eventId && bookingDbId) {
+                        await fetch(API + "?id=eq." + bookingDbId, {
+                            method: "PATCH",
+                            headers: { ...authHeaders, "Prefer": "return=minimal" },
+                            body: JSON.stringify({ calendar_event_id: calData.eventId })
+                        });
+                        load();
+                    }
+                }
+            } catch(calErr) {
+                console.warn("Naptár worker hiba (a foglalás mentve, csak a naptárba nem került be):", calErr);
+            }
         } catch(e) {
             alert("❌ Rögzítési hiba: " + e.message);
+        }
+    }
+
+    // ── Naptárból hiányzó bejegyzések pótlása (meglévő, régebbi foglalásokhoz) ──
+    async function syncMissingCalendarEvents() {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const resp = await fetch(
+                API + "?status=eq.AKTÍV&calendar_event_id=is.null&date=gte." + today + "&select=*",
+                { headers: authHeaders }
+            );
+            if (!resp.ok) throw new Error("HTTP " + resp.status);
+            const missing = await resp.json();
+
+            if (missing.length === 0) {
+                alert("✅ Nincs pótolandó bejegyzés – minden AKTÍV, jövőbeli foglaláshoz van naptáresemény.");
+                return;
+            }
+
+            if (!confirm(missing.length + " db naptár nélküli, AKTÍV foglalást találtam (mai naptól). Pótoljam a Google Calendar bejegyzéseket? Ez eltarthat egy ideig.")) return;
+
+            let success = 0, fail = 0;
+            for (const b of missing) {
+                try {
+                    const calResp = await fetch("https://calendar-bot.jazminlovasudvar-gyongyos.workers.dev/", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            date: b.date, startMin: b.start_time, endMin: b.end_time,
+                            name: b.name, phone: b.phone || "", service: b.service || ""
+                        })
+                    });
+                    if (calResp.ok) {
+                        const calData = await calResp.json();
+                        if (calData.eventId) {
+                            await fetch(API + "?id=eq." + b.id, {
+                                method: "PATCH",
+                                headers: { ...authHeaders, "Prefer": "return=minimal" },
+                                body: JSON.stringify({ calendar_event_id: calData.eventId })
+                            });
+                            success++;
+                        } else {
+                            fail++;
+                        }
+                    } else {
+                        fail++;
+                    }
+                } catch(itemErr) {
+                    console.warn("Pótlási hiba ennél a foglalásnál:", b.id, itemErr);
+                    fail++;
+                }
+                // Rövid szünet foglalásonként, hogy ne terheljük túl a workert
+                await new Promise(r => setTimeout(r, 400));
+            }
+
+            alert("✅ Pótlás kész! Sikeres: " + success + ", sikertelen: " + fail);
+            load();
+        } catch(e) {
+            alert("❌ Hiba: " + e.message);
         }
     }
 
