@@ -664,7 +664,7 @@ async function generateTimeSlots() {
 
         loading.style.display = "none";
 
-        const isClosedDay = reserved.some(r => r.name === "ZÁRVA");
+        const isClosedDay = reserved.some(r => r.name === "ZÁRVA" && r.start_time === 0 && r.end_time >= 1440);
         if (isClosedDay) {
             closed.style.display = "block";
             updateSteps();

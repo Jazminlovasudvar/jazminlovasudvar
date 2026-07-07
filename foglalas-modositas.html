@@ -620,7 +620,7 @@ async function modGenerateSlots() {
 
         loading.style.display = "none";
 
-        const isClosedDay = reserved.some(r => r.name === "ZÁRVA");
+        const isClosedDay = reserved.some(r => r.name === "ZÁRVA" && r.start_time === 0 && r.end_time >= 1440);
         if (isClosedDay) {
             closed.style.display = "block";
             closed.textContent = "Ez a nap zárva van.";
@@ -652,7 +652,7 @@ async function modGenerateSlots() {
 
             // Ütközés-ellenőrzés
             const conflict = reserved.some(r =>
-                r.name !== "ZÁRVA" && cur < r.end_time && (cur + dur) > r.start_time
+                cur < r.end_time && (cur + dur) > r.start_time
             );
 
             // 48 órás ellenőrzés erre a konkrét időpontra
