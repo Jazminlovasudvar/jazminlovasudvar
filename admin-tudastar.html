@@ -84,6 +84,18 @@
         .add-cat-row input { flex: 1; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 14px; }
         .btn-add-cat { background: var(--dark-green); color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; }
         .btn-add-cat:hover { background: var(--dark-green-hover); }
+
+        /* AI KÉP GENERÁLÁS */
+        .ai-image-box { background: #f4f8f4; border: 1.5px dashed var(--dark-green); border-radius: 12px; padding: 18px; margin-top: 14px; }
+        .btn-ai-generate { background: var(--dark-green); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+        .btn-ai-generate:hover { background: var(--dark-green-hover); }
+        .btn-ai-generate:disabled { background: #aaa; cursor: not-allowed; }
+        .ai-preview-wrap { width: 100%; max-width: 320px; border-radius: 12px; overflow: hidden; background: #eee; }
+        .ai-preview-wrap img { width: 100%; display: block; }
+        .btn-ai-accept { background: #2e7d32; color: white; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-ai-accept:hover { background: #1b5e20; }
+        .btn-ai-retry { background: #fff3e0; color: #e65100; border: none; padding: 10px 18px; border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .btn-ai-retry:hover { background: #ffe0b2; }
     
         .nav-btn:hover { background: rgba(255,255,255,0.15) !important; }
 
@@ -223,6 +235,29 @@
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">Kattints vagy húzz ide képeket<br><strong>Több kép egyszerre is választható</strong></div>
             </div>
+
+            <div class="ai-image-box">
+                <div style="font-size:13px;font-weight:600;color:var(--dark-green);margin-bottom:8px;">🤖 Vagy generálj illusztrációt AI-val</div>
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="aiPrompt" placeholder="Pl. póni fejcsutakolása, meleg pasztell stílusban" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:20px;font-size:14px;">
+                    <button type="button" class="btn-ai-generate" id="aiGenerateBtn" onclick="generateAiImage()">✨ Generálás</button>
+                </div>
+                <div id="aiImageResult" style="display:none;margin-top:14px;">
+                    <div class="ai-preview-wrap">
+                        <img id="aiPreviewImg" src="" alt="AI kép előnézet">
+                    </div>
+                    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+                        <button type="button" class="btn-ai-accept" onclick="acceptAiImage()">✅ Ez jó, hozzáadom</button>
+                        <button type="button" class="btn-ai-retry" onclick="generateAiImage()">🔄 Újragenerálás</button>
+                        <button type="button" class="btn-grey" onclick="discardAiImage()">Elvetem</button>
+                    </div>
+                    <div style="font-size:12px;color:#999;margin-top:6px;" id="aiAttemptLabel"></div>
+                </div>
+                <div id="aiLoading" style="display:none;margin-top:12px;display:flex;align-items:center;gap:10px;color:#888;font-size:13px;">
+                    <div class="mini-spinner"></div> Kép generálása folyamatban… (10-20 másodperc)
+                </div>
+            </div>
+
             <div class="images-grid" id="imagesGrid"></div>
         </div>
         <div class="btn-row">
@@ -311,18 +346,85 @@ function removeImage(index) {
     renderThumbs();
 }
 
+// ── AI KÉP GENERÁLÁS ──
+// FIGYELEM: ez a végpont még nem létezik – ide kell majd egy saját Cloudflare Worker URL-t
+// beírni, ami a képgeneráló API-t hívja és feltölti a Supabase Storage-ba (lásd: generate-image-worker.js).
+const AI_IMAGE_ENDPOINT = "https://tudastar-ai-kep.PELDA-ACCOUNT.workers.dev/generate";
+let aiAttemptCount = 0;
+
+async function generateAiImage() {
+    const promptInput = document.getElementById('aiPrompt');
+    const prompt = promptInput.value.trim();
+    if (!prompt) return toast('⚠️ Írd le röviden, mit ábrázoljon a kép!', '#e65100');
+
+    document.getElementById('aiGenerateBtn').disabled = true;
+    document.getElementById('aiLoading').style.display = 'flex';
+    document.getElementById('aiImageResult').style.display = 'none';
+
+    try {
+        const resp = await fetch(AI_IMAGE_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt })
+        });
+        if (!resp.ok) throw new Error('Generálási hiba');
+        const data = await resp.json();
+
+        aiAttemptCount++;
+        document.getElementById('aiPreviewImg').src = data.url;
+        document.getElementById('aiImageResult').style.display = 'block';
+        document.getElementById('aiAttemptLabel').textContent = aiAttemptCount + '. próbálkozás — ha nem tetszik, nyugodtan generáld újra';
+        document.getElementById('aiPreviewImg').dataset.url = data.url;
+    } catch (e) {
+        toast('❌ Nem sikerült a kép generálása. Próbáld újra, vagy tölts fel saját képet.', '#c0392b');
+    } finally {
+        document.getElementById('aiGenerateBtn').disabled = false;
+        document.getElementById('aiLoading').style.display = 'none';
+    }
+}
+
+function acceptAiImage() {
+    const url = document.getElementById('aiPreviewImg').dataset.url;
+    if (!url) return;
+    currentImages.push(url);
+    renderThumbs();
+    discardAiImage();
+    toast('✅ AI kép hozzáadva a bejegyzéshez!');
+}
+
+function discardAiImage() {
+    document.getElementById('aiImageResult').style.display = 'none';
+    document.getElementById('aiPreviewImg').src = '';
+    document.getElementById('aiPreviewImg').dataset.url = '';
+    aiAttemptCount = 0;
+    document.getElementById('aiPrompt').value = '';
+}
+
+function slugify(str) {
+    const map = {'á':'a','é':'e','í':'i','ó':'o','ö':'o','ő':'o','ú':'u','ü':'u','ű':'u','Á':'a','É':'e','Í':'i','Ó':'o','Ö':'o','Ő':'o','Ú':'u','Ü':'u','Ű':'u'};
+    return (str || '')
+        .split('').map(ch => map[ch] || ch).join('')
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .slice(0, 80);
+}
+
 async function submitNews() {
     const title = document.getElementById('newsTitle').value.trim();
-    const content = document.getElementById('newsContent').value.trim();
+    const content = getEditorContent().trim();
     const editId = document.getElementById('editId').value;
-    if (!title || !content) return toast("⚠️ Cím és szöveg kötelező!", '#e65100');
+    if (!title || !content || content === 'Kattints ide a szöveg írásához...') return toast("⚠️ Cím és szöveg kötelező!", '#e65100');
     const btn = document.getElementById('submitBtn');
     const btnText = document.getElementById('btnText');
     const spinner = document.getElementById('spinner');
     btn.disabled = true; btnText.textContent = "Mentés..."; spinner.style.display = 'block';
     try {
         const category = document.getElementById('newsCategory').value;
-        const payload = { title, content, category, image_url: currentImages[0] || null, images: currentImages, updated_at: new Date().toISOString() };
+        const slug = slugify(title);
+        const payload = { title, content, category, slug, image_url: currentImages[0] || null, images: currentImages, updated_at: new Date().toISOString() };
         if (editId) {
             await fetch(SUPABASE_URL + "/rest/v1/news?id=eq." + editId, { method: "PATCH", headers: HEADERS, body: JSON.stringify(payload) });
             toast("✅ Bejegyzés frissítve!");
